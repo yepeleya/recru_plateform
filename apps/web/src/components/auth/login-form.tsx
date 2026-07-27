@@ -29,7 +29,7 @@ export function LoginForm() {
       setError(
         err instanceof Error
           ? err.message
-          : "Impossible de contacter le serveur pour le moment."
+          : "La connexion a échoué. Vérifie ta connexion internet et réessaie."
       );
     } finally {
       setLoading(false);

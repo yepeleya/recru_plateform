@@ -220,7 +220,7 @@ export function SignupWizard() {
       setError(
         err instanceof Error
           ? err.message
-          : "Impossible de contacter le serveur pour le moment."
+          : "La connexion a échoué. Vérifie ta connexion internet et réessaie."
       );
     } finally {
       setLoading(false);
@@ -230,13 +230,13 @@ export function SignupWizard() {
   if (success) {
     return (
       <div className="animate-fade-up rounded-2xl border border-stone-200 bg-white p-8 text-center sm:p-10">
-        <CheckCircle2 aria-hidden className="mx-auto h-14 w-14 text-emerald-500" />
-        <h2 className="font-display mt-4 text-2xl font-bold">Compte créé !</h2>
-        <p className="mx-auto mt-3 max-w-md leading-relaxed text-stone-600">
-          Ton compte est actif dès maintenant. Notre équipe vérifie ta pièce
-          d&apos;identité en arrière-plan — tu recevras un badge{" "}
-          <strong>« Profil vérifié »</strong> une fois la validation faite,
-          sans que ça bloque ton utilisation de Bara aujourd&apos;hui.
+        <CheckCircle2 aria-hidden className="mx-auto h-14 w-14 text-success" />
+        <h2 className="font-display mt-4 text-2xl font-bold">Compte créé avec succès</h2>
+        <p className="mx-auto mt-3 max-w-md leading-relaxed text-muted-foreground">
+          Ton compte Bara est actif dès maintenant. Ta pièce d&apos;identité
+          sera vérifiée par notre équipe, et tu recevras le badge{" "}
+          <strong>« Profil vérifié »</strong> une fois le contrôle terminé. Tu
+          peux dès à présent utiliser Bara normalement.
         </p>
         <Link
           href="/"
@@ -654,12 +654,12 @@ export function SignupWizard() {
               </span>
             </label>
 
-            <div className="flex items-start gap-3 rounded-xl border border-stone-200 bg-white p-4">
-              <Lock aria-hidden className="mt-0.5 h-5 w-5 shrink-0 text-stone-400" />
-              <p className="text-xs leading-relaxed text-stone-500">
-                Ton compte est actif immédiatement après inscription. La
-                vérification de ta pièce d&apos;identité se fait ensuite en
-                arrière-plan, sans bloquer ton accès à Bara.
+            <div className="flex items-start gap-3 rounded-xl border border-border bg-surface p-4">
+              <Lock aria-hidden className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Ton compte est actif dès l&apos;inscription. Notre équipe
+                vérifie ensuite ta pièce d&apos;identité, sans que tu aies à
+                attendre pour utiliser Bara.
               </p>
             </div>
           </div>

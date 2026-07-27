@@ -5,7 +5,7 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4100/api/v1";
 
 const SERVER_UNAVAILABLE_MESSAGE =
-  "Cette fonctionnalité arrive bientôt : le serveur de Bara n'est pas encore en ligne.";
+  "La connexion à Bara a échoué. Vérifie ta connexion internet et réessaie dans un instant.";
 
 // fetch() lève une TypeError générique ("Failed to fetch") quand le serveur est
 // injoignable (backend absent, hors ligne, CORS...) — on la transforme en message

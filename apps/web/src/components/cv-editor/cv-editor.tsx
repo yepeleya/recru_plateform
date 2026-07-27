@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Plus, Trash2, Upload, CheckCircle2, Save, Download } from "lucide-react";
+import { Plus, Trash2, Upload, CheckCircle2, Save, Download, ArrowRight } from "lucide-react";
 import type {
   CvContent,
   EducationEntry,
@@ -732,9 +732,9 @@ export function CvEditor() {
         <div className="cv-editor-actions rounded-2xl border border-stone-200 bg-stone-50 p-5">
           <h2 className="font-display text-lg font-bold">Enregistrer et publier</h2>
           <p className="mt-1.5 text-sm leading-relaxed text-stone-600">
-            Ton CV est déjà enregistré automatiquement sur cet appareil au fur
-            et à mesure. Tu peux aussi le télécharger, ou le publier pour que
-            les recruteurs te trouvent sur Bara.
+            Ton CV est enregistré automatiquement au fur et à mesure que tu le
+            remplis. Tu peux aussi le télécharger, ou le publier pour que les
+            recruteurs te trouvent sur Bara.
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
             <button
@@ -760,7 +760,7 @@ export function CvEditor() {
               href="/inscription"
               className="btn-pop ml-auto inline-flex items-center gap-1.5 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white"
             >
-              Publier mon profil <span aria-hidden>→</span>
+              Publier mon profil <ArrowRight aria-hidden className="h-4 w-4" />
             </Link>
           </div>
           <p className="mt-3 text-xs leading-relaxed text-stone-500">

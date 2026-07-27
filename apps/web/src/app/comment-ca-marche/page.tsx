@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { UserPlus, Megaphone, MessageCircle, ClipboardList, Search, Handshake } from "lucide-react";
+import { UserPlus, Megaphone, MessageCircle, ClipboardList, Search, Handshake, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Comment trouver un petit job rapidement en Côte d'Ivoire",
@@ -173,7 +173,7 @@ export default function CommentCaMarchePage() {
             href="/creer-un-cv"
             className="btn-pop mt-6 inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 font-semibold text-brand-dark"
           >
-            Créer mon CV gratuitement <span aria-hidden>→</span>
+            Créer mon CV gratuitement <ArrowRight aria-hidden className="h-4 w-4" />
           </Link>
         </section>
       </div>

@@ -7,6 +7,7 @@ import {
   getMetierBySlug,
   getMetiersByCategorie,
 } from "@bara/shared-types";
+import { ArrowRight } from "lucide-react";
 import { buildMetierDescription, buildMetierTitle } from "@/lib/metier-seo";
 import { getMetierIcon } from "@/lib/metier-icons";
 
@@ -98,7 +99,7 @@ export default async function MetierPage({
               href="/creer-un-cv"
               className="btn-pop mt-5 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-brand-dark"
             >
-              Créer mon profil <span aria-hidden>→</span>
+              Créer mon profil <ArrowRight aria-hidden className="h-4 w-4" />
             </Link>
           </article>
 
@@ -114,7 +115,7 @@ export default async function MetierPage({
               href="/inscription"
               className="btn-pop mt-5 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-accent"
             >
-              Publier une offre <span aria-hidden>→</span>
+              Publier une offre <ArrowRight aria-hidden className="h-4 w-4" />
             </Link>
           </article>
         </div>

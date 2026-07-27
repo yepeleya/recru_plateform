@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getMetierBySlug } from "@bara/shared-types";
 import { DEMO_PROFILES, JOB_TYPE_LABELS, getDemoProfileBySlug } from "@/lib/demo-data";
+import { ArrowRight } from "lucide-react";
 import { getMetierIcon } from "@/lib/metier-icons";
 
 export function generateStaticParams() {
@@ -117,7 +118,7 @@ export default async function ProfilDetailPage({
           href="/inscription"
           className="btn-pop mt-5 inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 font-semibold text-accent"
         >
-          Créer mon compte recruteur <span aria-hidden>→</span>
+          Créer mon compte recruteur <ArrowRight aria-hidden className="h-4 w-4" />
         </Link>
       </section>
 

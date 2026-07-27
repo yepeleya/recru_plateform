@@ -8,6 +8,7 @@ import {
   formatBudget,
   getDemoOfferBySlug,
 } from "@/lib/demo-data";
+import { ArrowRight } from "lucide-react";
 import { getMetierIcon } from "@/lib/metier-icons";
 
 export function generateStaticParams() {
@@ -115,7 +116,7 @@ export default async function OffreDetailPage({
           href="/inscription"
           className="btn-pop mt-5 inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 font-semibold text-brand-dark"
         >
-          Créer mon compte <span aria-hidden>→</span>
+          Créer mon compte <ArrowRight aria-hidden className="h-4 w-4" />
         </Link>
       </section>
 

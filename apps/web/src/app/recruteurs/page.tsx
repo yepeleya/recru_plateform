@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Zap, ShieldCheck, FileText, Building2 } from "lucide-react";
+import { Zap, ShieldCheck, FileText, Building2, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Recruter du personnel ponctuel en Côte d'Ivoire",
@@ -60,7 +60,7 @@ export default function RecruteursPage() {
               href="/inscription"
               className="btn-pop inline-flex items-center gap-2 rounded-full bg-brand px-7 py-3.5 font-semibold text-white"
             >
-              Créer mon compte recruteur <span aria-hidden>→</span>
+              Créer mon compte recruteur <ArrowRight aria-hidden className="h-4 w-4" />
             </Link>
             <Link
               href="/profils"

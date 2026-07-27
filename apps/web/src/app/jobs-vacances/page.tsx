@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PackageOpen, Utensils, Bike, ShoppingBag, PartyPopper, GraduationCap } from "lucide-react";
+import { PackageOpen, Utensils, Bike, ShoppingBag, PartyPopper, GraduationCap, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Job de vacances étudiant à Abidjan : trouve le tien",
@@ -43,7 +43,7 @@ export default function JobsVacancesPage() {
               href="/creer-un-cv"
               className="btn-pop inline-flex items-center gap-2 rounded-full bg-brand px-7 py-3.5 font-semibold text-white"
             >
-              Créer mon CV gratuitement <span aria-hidden>→</span>
+              Créer mon CV gratuitement <ArrowRight aria-hidden className="h-4 w-4" />
             </Link>
             <Link
               href="/offres?type=saisonnier"

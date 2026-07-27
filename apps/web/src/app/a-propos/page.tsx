@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Heart } from "lucide-react";
+import { Heart, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "À propos de Bara, plateforme de mise en relation",
@@ -89,7 +89,7 @@ export default function AProposPage() {
           href="/inscription"
           className="btn-pop mt-5 inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 font-semibold text-brand-dark"
         >
-          Créer mon compte <span aria-hidden>→</span>
+          Créer mon compte <ArrowRight aria-hidden className="h-4 w-4" />
         </Link>
       </section>
     </main>
