@@ -1,0 +1,278 @@
+@import "tailwindcss";
+
+/* Dark mode piloté par la classe .dark sur <html> (CLAUDE.md Partie 3 §10). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ================================================================== */
+/* TOKENS SÉMANTIQUES — source unique de vérité des couleurs.          */
+/* Les composants n'utilisent jamais une teinte fixe (bg-[#..]),       */
+/* toujours un token (bg-surface, text-foreground, bg-primary…).       */
+/* Chaque token a une valeur light (:root) et dark (.dark).            */
+/* ================================================================== */
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-grotesk), var(--font-inter), ui-sans-serif, sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border-color);
+  --color-input: var(--input-color);
+  --color-ring: var(--ring);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-danger-soft: var(--danger-soft);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-soft: var(--warning-soft);
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+
+  /* Tokens de marque legacy conservés (héros, dégradés) — les pages
+     migrent progressivement vers les tokens sémantiques ci-dessus. */
+  --color-brand: #f97316;
+  --color-brand-dark: #c2410c;
+  --color-brand-deep: #7c2d12;
+  --color-brand-light: #fff7ed;
+  --color-accent-light: #f3e8ff;
+  --color-sun: #facc15;
+  --color-ink: #1c1917;
+  --color-night: #0c0a09;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #1c1917;
+  --surface: #ffffff;
+  --surface-2: #fafaf9;
+  --muted: #f5f5f4;
+  --muted-foreground: #6b6560;
+  --border-color: #e7e5e4;
+  --input-color: #d6d3d1;
+  --ring: #ea580c;
+
+  --primary: #ea580c;
+  --primary-hover: #c2410c;
+  --primary-foreground: #ffffff;
+  --primary-soft: #fff7ed;
+
+  --accent: #7c3aed;
+  --accent-hover: #6d28d9;
+  --accent-foreground: #ffffff;
+  --accent-soft: #f3e8ff;
+
+  --success: #15803d;
+  --success-foreground: #ffffff;
+  --success-soft: #f0fdf4;
+  --danger: #dc2626;
+  --danger-foreground: #ffffff;
+  --danger-soft: #fef2f2;
+  --warning: #b45309;
+  --warning-foreground: #ffffff;
+  --warning-soft: #fffbeb;
+}
+
+.dark {
+  --background: #0c0a09;
+  --foreground: #f5f5f4;
+  --surface: #1c1917;
+  --surface-2: #26221f;
+  --muted: #292524;
+  --muted-foreground: #a8a29e;
+  --border-color: #2c2724;
+  --input-color: #44403c;
+  --ring: #fb923c;
+
+  --primary: #f97316;
+  --primary-hover: #fb923c;
+  --primary-foreground: #ffffff;
+  --primary-soft: #2a1a0f;
+
+  --accent: #8b5cf6;
+  --accent-hover: #a78bfa;
+  --accent-foreground: #ffffff;
+  --accent-soft: #241a3a;
+
+  --success: #22c55e;
+  --success-foreground: #052e16;
+  --success-soft: #0f2417;
+  --danger: #f87171;
+  --danger-foreground: #450a0a;
+  --danger-soft: #2a1414;
+  --warning: #f59e0b;
+  --warning-foreground: #3a2a08;
+  --warning-soft: #2a2008;
+}
+
+body {
+  @apply bg-background font-sans text-foreground antialiased;
+}
+
+::selection {
+  @apply bg-primary text-white;
+}
+
+/* ------------------------------------------------------------------ */
+/* Animations (CSS pur — pas de "use client" nécessaire)               */
+/* ------------------------------------------------------------------ */
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--float-rotate, 0deg));
+  }
+  50% {
+    transform: translateY(-14px) rotate(var(--float-rotate, 0deg));
+  }
+}
+
+@keyframes blob-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(32px, -24px) scale(1.08);
+  }
+  66% {
+    transform: translate(-24px, 28px) scale(0.94);
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-float {
+  animation: float 5.5s ease-in-out infinite;
+}
+
+.animate-blob {
+  animation: blob-drift 16s ease-in-out infinite;
+}
+
+.animate-marquee {
+  animation: marquee 32s linear infinite;
+}
+
+.anim-delay-1 {
+  animation-delay: 0.12s;
+}
+.anim-delay-2 {
+  animation-delay: 0.24s;
+}
+.anim-delay-3 {
+  animation-delay: 0.36s;
+}
+.anim-delay-4 {
+  animation-delay: 0.48s;
+}
+
+/* Carte qui se soulève au survol */
+.card-lift {
+  transition:
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.3s ease;
+}
+.card-lift:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 48px -20px rgb(28 25 23 / 0.28);
+}
+
+/* Boutons : léger zoom + ombre au survol */
+.btn-pop {
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s ease,
+    background-color 0.25s ease,
+    color 0.25s ease;
+}
+.btn-pop:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 14px 30px -12px rgb(249 115 22 / 0.55);
+}
+.btn-pop:active {
+  transform: translateY(0) scale(0.99);
+}
+
+/* Impression du CV : n'affiche que #cv-print-area, en pleine page */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #cv-print-area,
+  #cv-print-area * {
+    visibility: visible;
+  }
+  #cv-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  #cv-print-area > div {
+    max-width: none !important;
+    aspect-ratio: auto !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Accessibilité : on coupe tout si l'utilisateur préfère éviter le mouvement */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-float,
+  .animate-blob,
+  .animate-marquee {
+    animation: none;
+  }
+  .card-lift,
+  .card-lift:hover,
+  .btn-pop,
+  .btn-pop:hover,
+  .btn-pop:active {
+    transition: none;
+    transform: none;
+  }
+}

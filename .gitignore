@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+
+# Builds
+dist/
+build/
+
+# Environment — JAMAIS commité (règle sécurité)
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Stockage privé (pièces d'identité, RCCM) — jamais commité, jamais public
+apps/api/uploads/
+
+# Misc
+*.tsbuildinfo

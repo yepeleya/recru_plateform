@@ -1,0 +1,200 @@
+// Bara API — schéma de données
+// Provider: MySQL
+//
+// Les champs "type enum" (accountType, verificationStatus, idDocumentType,
+// jobTypes, offerStatus...) sont stockés en String plutôt qu'en enum Prisma :
+// @bara/shared-types définit déjà ces unions de littéraux TypeScript côté
+// frontend, et la validation stricte se fait à la frontière (DTO class-validator).
+// Dupliquer ces valeurs dans un enum Prisma créerait un risque de désync entre
+// les deux définitions. Seul `Role` (interne au backend, pas exposé au frontend
+// via shared-types) est un vrai enum Prisma.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPPORT
+}
+
+model User {
+  id       String @id @default(uuid())
+  email    String @unique
+  passwordHash String
+  role     Role   @default(USER)
+
+  // 'candidat' | 'recruteur-particulier' | 'recruteur-entreprise' (AccountType)
+  accountType String
+
+  phone String
+  city  String
+
+  // Candidat / recruteur-particulier
+  firstName String?
+  lastName  String?
+
+  // Recruteur-entreprise
+  companyName              String?
+  sector                   String?
+  rccmNumber                String?
+  rccmFileKey               String? // clé de stockage privé — jamais d'URL publique
+  representativeFirstName   String?
+  representativeLastName    String?
+  representativeRole        String?
+
+  // 'non-verifie' | 'en-attente' | 'verifie' | 'rejete' (VerificationStatus)
+  verificationStatus String  @default("non-verifie")
+  businessVerified   Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  identityDocument IdentityDocument?
+  cvs              Cv[]
+  workerProfiles   WorkerProfile[]
+  jobOffers        JobOffer[]
+  refreshTokens    RefreshToken[]
+  auditLogs        AdminAuditLog[] @relation("AuditLogAdmin")
+
+  @@map("users")
+}
+
+// Refresh tokens émis, stockés côté serveur pour permettre la révocation
+// (CLAUDE.md Partie 4 §3). On ne stocke qu'un hash SHA-256 du token signé,
+// jamais le token en clair : une fuite de la base n'expose aucun token
+// réutilisable. `id` sert de `jti` dans le JWT refresh. Rotation à chaque
+// usage (l'ancien est marqué revoked), révocation au logout.
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @db.VarChar(64)
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// Pièce d'identité — un seul document par compte (le représentant légal
+// s'identifie personnellement pour un compte entreprise). Fichiers stockés
+// hors dossier public ; accès uniquement via l'endpoint protégé /uploads.
+model IdentityDocument {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 'cni' | 'passeport' | 'permis-conduire' (IdDocumentType)
+  type   String
+  number String
+
+  frontFileKey String
+  backFileKey  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("identity_documents")
+}
+
+model Cv {
+  id         String @id @default(uuid())
+  userId     String
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title      String @default("Mon CV")
+  templateId String @default("vert-sauge")
+  // Structure définie par @bara/shared-types CvContent
+  content    Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("cvs")
+}
+
+model WorkerProfile {
+  id     String @id @default(uuid())
+  slug   String @unique
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  headline String
+  bio      String? @db.Text
+
+  metierSlug String
+  city       String
+
+  isAvailableNow Boolean   @default(true)
+  availableFrom  DateTime?
+
+  // string[] de JobType — stocké en JSON (pas de type array natif MySQL/Prisma)
+  jobTypes Json
+
+  cvId      String?
+  isVisible Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([metierSlug])
+  @@map("worker_profiles")
+}
+
+model JobOffer {
+  id          String @id @default(uuid())
+  slug        String @unique
+  title       String
+  description String @db.Text
+
+  metierSlug String
+  // 'mission-ponctuelle' | 'saisonnier' | 'temps-partiel' | 'temps-plein' | 'a-distance' | 'stage'
+  type       String
+
+  city String
+  area String?
+
+  budgetMin   Int?
+  budgetMax   Int?
+  budgetLabel String?
+
+  startDate DateTime?
+  endDate   DateTime?
+
+  // 'draft' | 'published' | 'closed' | 'expired' (OfferStatus)
+  status String @default("draft")
+
+  recruiterId String
+  recruiter   User   @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([recruiterId])
+  @@index([metierSlug])
+  @@map("job_offers")
+}
+
+model AdminAuditLog {
+  id       String @id @default(uuid())
+  adminId  String
+  admin    User   @relation("AuditLogAdmin", fields: [adminId], references: [id], onDelete: Cascade)
+  action   String // ex: "VERIFY_IDENTITY", "SUSPEND_USER"
+  entity   String // ex: "User", "JobOffer"
+  entityId String?
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([adminId])
+  @@map("admin_audit_logs")
+}
