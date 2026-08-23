@@ -18,9 +18,21 @@ async function bootstrap() {
     .split(',')
     // Accepte localhost et 127.0.0.1 pour chaque origine configurée (même
     // machine, mais le navigateur les traite comme des origines différentes).
-    .flatMap((o) => [o, o.replace('://localhost', '://127.0.0.1')]);
+    .flatMap((o) => [o.trim(), o.trim().replace('://localhost', '://127.0.0.1')]);
+  const isProd = process.env.NODE_ENV === 'production';
+  // Autorise n'importe quel port localhost/127.0.0.1 EN DÉVELOPPEMENT uniquement :
+  // le front dev tourne sur un port variable (3100, 3200…), et un port non
+  // whitelisté produisait un échec CORS interprété à tort comme « pas d'internet ».
+  // La prod conserve la whitelist stricte (WEB_APP_URL).
+  const localhostDev = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
   app.enableCors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      // Pas d'Origin (curl, same-origin, outils serveur) → autorisé.
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      if (!isProd && localhostDev.test(origin)) return callback(null, true);
+      return callback(new Error(`Origine non autorisée par CORS: ${origin}`), false);
+    },
     credentials: true,
   });
 

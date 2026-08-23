@@ -1,5 +1,5 @@
 // Bara API — schéma de données
-// Provider: MySQL
+// Provider: MySQL (InnoDB — voir my.ini WAMP: default_storage_engine=InnoDB)
 //
 // Les champs "type enum" (accountType, verificationStatus, idDocumentType,
 // jobTypes, offerStatus...) sont stockés en String plutôt qu'en enum Prisma :
@@ -8,6 +8,13 @@
 // Dupliquer ces valeurs dans un enum Prisma créerait un risque de désync entre
 // les deux définitions. Seul `Role` (interne au backend, pas exposé au frontend
 // via shared-types) est un vrai enum Prisma.
+//
+// TAILLES : chaque champ est dimensionné selon son usage métier réel (audit
+// 2026-08-23), pas VARCHAR(191) par défaut. Les identifiants UUID et toutes les
+// clés étrangères sont en CHAR(36) (longueur exacte d'un uuid v4) — indexés
+// partout, cela réduit fortement la taille des index. `email` reste en VARCHAR(191)
+// (identifiant de connexion, marge conservée). Les champs libres (bio, description,
+// message) sont en TEXT.
 
 generator client {
   provider = "prisma-client-js"
@@ -25,41 +32,42 @@ enum Role {
 }
 
 model User {
-  id       String @id @default(uuid())
-  email    String @unique
-  passwordHash String
-  role     Role   @default(USER)
+  id           String @id @default(uuid()) @db.Char(36)
+  email        String @unique @db.VarChar(191)
+  passwordHash String @db.VarChar(100) // bcrypt = 60 ; marge pour évolution d'algo
+  role         Role   @default(USER)
 
   // 'candidat' | 'recruteur-particulier' | 'recruteur-entreprise' (AccountType)
-  accountType String
+  accountType String @db.VarChar(30)
 
-  phone String
-  city  String
+  phone String @db.VarChar(20)
+  city  String @db.VarChar(80)
 
   // Candidat / recruteur-particulier
-  firstName String?
-  lastName  String?
+  firstName String? @db.VarChar(40)
+  lastName  String? @db.VarChar(40)
 
   // Recruteur-entreprise
-  companyName              String?
-  sector                   String?
-  rccmNumber                String?
-  rccmFileKey               String? // clé de stockage privé — jamais d'URL publique
-  representativeFirstName   String?
-  representativeLastName    String?
-  representativeRole        String?
+  companyName             String? @db.VarChar(150)
+  sector                  String? @db.VarChar(100)
+  rccmNumber              String? @db.VarChar(50)
+  rccmFileKey             String? @db.VarChar(100) // clé de stockage privé — jamais d'URL publique
+  representativeFirstName String? @db.VarChar(40)
+  representativeLastName  String? @db.VarChar(40)
+  representativeRole      String? @db.VarChar(100)
 
   // 'non-verifie' | 'en-attente' | 'verifie' | 'rejete' (VerificationStatus)
-  verificationStatus String  @default("non-verifie")
+  verificationStatus String  @default("non-verifie") @db.VarChar(30)
   businessVerified   Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   identityDocument IdentityDocument?
-  cvs              Cv[]
+  cv               Cv?
   workerProfiles   WorkerProfile[]
   jobOffers        JobOffer[]
+  applications     Application[]   @relation("CandidateApplications")
   refreshTokens    RefreshToken[]
   auditLogs        AdminAuditLog[] @relation("AuditLogAdmin")
 
@@ -72,10 +80,10 @@ model User {
 // réutilisable. `id` sert de `jti` dans le JWT refresh. Rotation à chaque
 // usage (l'ancien est marqué revoked), révocation au logout.
 model RefreshToken {
-  id        String    @id @default(uuid())
-  userId    String
+  id        String    @id @default(uuid()) @db.Char(36)
+  userId    String    @db.Char(36)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tokenHash String    @db.VarChar(64)
+  tokenHash String    @db.VarChar(64) // sha256 hex = 64
   expiresAt DateTime
   revokedAt DateTime?
   createdAt DateTime  @default(now())
@@ -88,16 +96,16 @@ model RefreshToken {
 // s'identifie personnellement pour un compte entreprise). Fichiers stockés
 // hors dossier public ; accès uniquement via l'endpoint protégé /uploads.
 model IdentityDocument {
-  id     String @id @default(uuid())
-  userId String @unique
+  id     String @id @default(uuid()) @db.Char(36)
+  userId String @unique @db.Char(36)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // 'cni' | 'passeport' | 'permis-conduire' (IdDocumentType)
-  type   String
-  number String
+  type   String @db.VarChar(20)
+  number String @db.VarChar(50)
 
-  frontFileKey String
-  backFileKey  String?
+  frontFileKey String  @db.VarChar(100)
+  backFileKey  String? @db.VarChar(100)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -105,33 +113,50 @@ model IdentityDocument {
   @@map("identity_documents")
 }
 
+// Un seul CV actif par candidat (userId @unique). Deux sources possibles :
+//  - 'generated' : CV créé sur Bara via l'éditeur, `content` (CvContent) rempli.
+//  - 'imported'  : CV PDF importé par le candidat, `fileKey`/`fileName`/... remplis.
+// Les contraintes métier (generated ⇒ content requis ; imported ⇒ fichier requis)
+// sont validées dans le service (CvsService), pas au niveau du schéma.
 model Cv {
-  id         String @id @default(uuid())
-  userId     String
-  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title      String @default("Mon CV")
-  templateId String @default("vert-sauge")
+  id     String @id @default(uuid()) @db.Char(36)
+  userId String @unique @db.Char(36)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title  String @default("Mon CV") @db.VarChar(120)
+
+  // 'generated' | 'imported'
+  source String @default("generated") @db.VarChar(20)
+
+  // --- CV généré sur Bara ---
+  templateId String? @db.VarChar(60)
   // Structure définie par @bara/shared-types CvContent
-  content    Json
+  content    Json?
+
+  // --- CV importé (PDF) ---
+  fileKey   String? @db.VarChar(100) // clé de stockage privé (UUID) — jamais exposée au frontend
+  fileName  String? @db.VarChar(255) // nom d'origine, pour affichage uniquement
+  mimeType  String? @db.VarChar(100)
+  sizeBytes Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([userId])
+  applications Application[]
+
   @@map("cvs")
 }
 
 model WorkerProfile {
-  id     String @id @default(uuid())
-  slug   String @unique
-  userId String
+  id     String @id @default(uuid()) @db.Char(36)
+  slug   String @unique @db.VarChar(150)
+  userId String @db.Char(36)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  headline String
+  headline String  @db.VarChar(150)
   bio      String? @db.Text
 
-  metierSlug String
-  city       String
+  metierSlug String @db.VarChar(80)
+  city       String @db.VarChar(80)
 
   isAvailableNow Boolean   @default(true)
   availableFrom  DateTime?
@@ -139,7 +164,7 @@ model WorkerProfile {
   // string[] de JobType — stocké en JSON (pas de type array natif MySQL/Prisma)
   jobTypes Json
 
-  cvId      String?
+  cvId      String? @db.Char(36)
   isVisible Boolean @default(true)
 
   createdAt DateTime @default(now())
@@ -151,46 +176,77 @@ model WorkerProfile {
 }
 
 model JobOffer {
-  id          String @id @default(uuid())
-  slug        String @unique
-  title       String
+  id          String @id @default(uuid()) @db.Char(36)
+  slug        String @unique @db.VarChar(150)
+  title       String @db.VarChar(150)
   description String @db.Text
 
-  metierSlug String
+  metierSlug String @db.VarChar(80)
   // 'mission-ponctuelle' | 'saisonnier' | 'temps-partiel' | 'temps-plein' | 'a-distance' | 'stage'
-  type       String
+  type       String @db.VarChar(50)
 
-  city String
-  area String?
+  city String  @db.VarChar(80)
+  area String? @db.VarChar(80)
 
   budgetMin   Int?
   budgetMax   Int?
-  budgetLabel String?
+  budgetLabel String? @db.VarChar(60)
 
   startDate DateTime?
   endDate   DateTime?
 
   // 'draft' | 'published' | 'closed' | 'expired' (OfferStatus)
-  status String @default("draft")
+  status String @default("draft") @db.VarChar(30)
 
-  recruiterId String
+  recruiterId String @db.Char(36)
   recruiter   User   @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  applications Application[]
 
   @@index([recruiterId])
   @@index([metierSlug])
   @@map("job_offers")
 }
 
+// Candidature d'un candidat à une offre. Une seule candidature par (candidat, offre)
+// garantie par la contrainte unique. Le CV joint (`cvId`) est le CV actif du candidat
+// au moment de postuler ; SetNull si le CV est supprimé (la candidature subsiste, sans
+// CV consultable). Toutes les règles métier/autorisation sont dans ApplicationsService.
+model Application {
+  id String @id @default(uuid()) @db.Char(36)
+
+  candidateId String @db.Char(36)
+  candidate   User   @relation("CandidateApplications", fields: [candidateId], references: [id], onDelete: Cascade)
+
+  jobOfferId String   @db.Char(36)
+  jobOffer   JobOffer @relation(fields: [jobOfferId], references: [id], onDelete: Cascade)
+
+  cvId String? @db.Char(36)
+  cv   Cv?     @relation(fields: [cvId], references: [id], onDelete: SetNull)
+
+  // 'received' | 'in_review' | 'accepted' | 'rejected' (ApplicationStatus)
+  status  String  @default("received") @db.VarChar(30)
+  message String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([candidateId, jobOfferId])
+  @@index([jobOfferId])
+  @@index([candidateId])
+  @@map("applications")
+}
+
 model AdminAuditLog {
-  id       String @id @default(uuid())
-  adminId  String
-  admin    User   @relation("AuditLogAdmin", fields: [adminId], references: [id], onDelete: Cascade)
-  action   String // ex: "VERIFY_IDENTITY", "SUSPEND_USER"
-  entity   String // ex: "User", "JobOffer"
-  entityId String?
+  id       String  @id @default(uuid()) @db.Char(36)
+  adminId  String  @db.Char(36)
+  admin    User    @relation("AuditLogAdmin", fields: [adminId], references: [id], onDelete: Cascade)
+  action   String  @db.VarChar(50) // ex: "VERIFY_IDENTITY", "SUSPEND_USER"
+  entity   String  @db.VarChar(50) // ex: "User", "JobOffer"
+  entityId String? @db.VarChar(100) // référence générique (pas toujours un uuid) — non indexée
   metadata Json?
 
   createdAt DateTime @default(now())

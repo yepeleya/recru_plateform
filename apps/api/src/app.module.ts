@@ -8,6 +8,9 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { UploadsModule } from './uploads/uploads.module';
+import { CvsModule } from './cvs/cvs.module';
+import { ApplicationsModule } from './applications/applications.module';
+import { JobOffersModule } from './job-offers/job-offers.module';
 import { envValidationSchema } from './config/env.validation';
 
 @Module({
@@ -27,6 +30,9 @@ import { envValidationSchema } from './config/env.validation';
     AuthModule,
     UsersModule,
     UploadsModule,
+    CvsModule,
+    ApplicationsModule,
+    JobOffersModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],

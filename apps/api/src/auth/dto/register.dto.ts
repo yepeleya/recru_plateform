@@ -21,7 +21,7 @@ export class RegisterDto {
   accountType: (typeof ACCOUNT_TYPES)[number];
 
   @IsEmail()
-  @MaxLength(255)
+  @MaxLength(191) // aligné sur users.email VARCHAR(191)
   email: string;
 
   // Au moins une minuscule, une majuscule et un chiffre.
@@ -34,24 +34,24 @@ export class RegisterDto {
   password: string;
 
   @IsString()
-  @MaxLength(30)
+  @MaxLength(20)
   phone: string;
 
   @IsString()
-  @MaxLength(100)
+  @MaxLength(80)
   city: string;
 
   // --- Candidat / recruteur-particulier ---
   @ValidateIf((o: RegisterDto) => o.accountType !== 'recruteur-entreprise')
   @IsString()
   @MinLength(1)
-  @MaxLength(100)
+  @MaxLength(40)
   firstName?: string;
 
   @ValidateIf((o: RegisterDto) => o.accountType !== 'recruteur-entreprise')
   @IsString()
   @MinLength(1)
-  @MaxLength(100)
+  @MaxLength(40)
   lastName?: string;
 
   // --- Recruteur-entreprise ---
@@ -69,13 +69,13 @@ export class RegisterDto {
   @ValidateIf((o: RegisterDto) => o.accountType === 'recruteur-entreprise')
   @IsString()
   @MinLength(1)
-  @MaxLength(100)
+  @MaxLength(40)
   representativeFirstName?: string;
 
   @ValidateIf((o: RegisterDto) => o.accountType === 'recruteur-entreprise')
   @IsString()
   @MinLength(1)
-  @MaxLength(100)
+  @MaxLength(40)
   representativeLastName?: string;
 
   @ValidateIf((o: RegisterDto) => o.accountType === 'recruteur-entreprise')

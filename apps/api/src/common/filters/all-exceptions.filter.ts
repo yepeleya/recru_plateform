@@ -5,6 +5,10 @@ interface ErrorBody {
   statusCode: number;
   message: string | string[];
   error: string;
+  // Code machine stable optionnel (ex: 'CV_REQUIRED', 'DUPLICATE_APPLICATION',
+  // 'OFFER_NOT_OPEN') permettant au frontend de brancher un comportement précis
+  // sans parser le message humain.
+  code?: string;
 }
 
 // Filtre d'exception global — garantit un format de réponse d'erreur uniforme
@@ -30,6 +34,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
               statusCode: status,
               message: (response as { message?: string | string[] }).message ?? exception.message,
               error: (response as { error?: string }).error ?? exception.name,
+              ...((response as { code?: string }).code
+                ? { code: (response as { code: string }).code }
+                : {}),
             };
       res.status(status).json(body);
       return;
