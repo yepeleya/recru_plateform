@@ -10,8 +10,8 @@
 /* Chaque token a une valeur light (:root) et dark (.dark).            */
 /* ================================================================== */
 @theme inline {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-grotesk), var(--font-inter), ui-sans-serif, sans-serif;
+  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -49,41 +49,44 @@
   --radius-xl: 1.25rem;
 
   /* Tokens de marque legacy conservés (héros, dégradés) — les pages
-     migrent progressivement vers les tokens sémantiques ci-dessus. */
-  --color-brand: #f97316;
-  --color-brand-dark: #c2410c;
-  --color-brand-deep: #7c2d12;
-  --color-brand-light: #fff7ed;
-  --color-accent-light: #f3e8ff;
+     migrent progressivement vers les tokens sémantiques ci-dessus.
+     Re-skin Bara : bleu #0050CB + accent teal (fini l'orange/violet). */
+  --color-brand: #0050cb;
+  --color-brand-dark: #003fa3;
+  --color-brand-deep: #002a6b;
+  --color-brand-light: #eaf0ff;
+  --color-accent-light: #e6faf6;
   --color-sun: #facc15;
-  --color-ink: #1c1917;
-  --color-night: #0c0a09;
+  --color-ink: #0f172a;
+  --color-night: #0a0f1c;
 }
 
 :root {
   --background: #ffffff;
-  --foreground: #1c1917;
+  --foreground: #0f172a;
   --surface: #ffffff;
-  --surface-2: #fafaf9;
-  --muted: #f5f5f4;
-  --muted-foreground: #6b6560;
-  --border-color: #e7e5e4;
-  --input-color: #d6d3d1;
-  --ring: #ea580c;
+  --surface-2: #f8fafc;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --border-color: #e2e8f0;
+  --input-color: #cbd5e1;
+  --ring: #0050cb;
 
-  --primary: #ea580c;
-  --primary-hover: #c2410c;
+  --primary: #0050cb;
+  --primary-hover: #003fa3;
   --primary-foreground: #ffffff;
-  --primary-soft: #fff7ed;
+  --primary-soft: #eaf0ff;
 
-  --accent: #7c3aed;
-  --accent-hover: #6d28d9;
+  /* Accent = teal (secondaire) ; le violet est retiré du re-skin. */
+  --accent: #0d9488;
+  --accent-hover: #0f766e;
   --accent-foreground: #ffffff;
-  --accent-soft: #f3e8ff;
+  --accent-soft: #e6faf6;
 
-  --success: #15803d;
+  /* Succès / vérifié = teal (décision produit). */
+  --success: #0d9488;
   --success-foreground: #ffffff;
-  --success-soft: #f0fdf4;
+  --success-soft: #effcf9;
   --danger: #dc2626;
   --danger-foreground: #ffffff;
   --danger-soft: #fef2f2;
@@ -93,29 +96,29 @@
 }
 
 .dark {
-  --background: #0c0a09;
-  --foreground: #f5f5f4;
-  --surface: #1c1917;
-  --surface-2: #26221f;
-  --muted: #292524;
-  --muted-foreground: #a8a29e;
-  --border-color: #2c2724;
-  --input-color: #44403c;
-  --ring: #fb923c;
+  --background: #0a0f1c;
+  --foreground: #e6ebf4;
+  --surface: #0f1524;
+  --surface-2: #161d30;
+  --muted: #1a2236;
+  --muted-foreground: #94a3b8;
+  --border-color: #1e2740;
+  --input-color: #334155;
+  --ring: #4d84ff;
 
-  --primary: #f97316;
-  --primary-hover: #fb923c;
-  --primary-foreground: #ffffff;
-  --primary-soft: #2a1a0f;
+  --primary: #4d84ff;
+  --primary-hover: #6b9bff;
+  --primary-foreground: #04122e;
+  --primary-soft: #10203f;
 
-  --accent: #8b5cf6;
-  --accent-hover: #a78bfa;
-  --accent-foreground: #ffffff;
-  --accent-soft: #241a3a;
+  --accent: #2dd4bf;
+  --accent-hover: #5eead4;
+  --accent-foreground: #04201c;
+  --accent-soft: #0c2a26;
 
-  --success: #22c55e;
-  --success-foreground: #052e16;
-  --success-soft: #0f2417;
+  --success: #2dd4bf;
+  --success-foreground: #04201c;
+  --success-soft: #0c2a26;
   --danger: #f87171;
   --danger-foreground: #450a0a;
   --danger-soft: #2a1414;
@@ -230,7 +233,7 @@ body {
 }
 .btn-pop:hover {
   transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 14px 30px -12px rgb(249 115 22 / 0.55);
+  box-shadow: 0 14px 30px -12px rgb(0 80 203 / 0.5);
 }
 .btn-pop:active {
   transform: translateY(0) scale(0.99);

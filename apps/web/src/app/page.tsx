@@ -1,8 +1,29 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { FileText, Rocket, Handshake, UserRound, Building2, Sparkles, ArrowRight } from "lucide-react";
-import { METIER_CATEGORIES, METIERS, getMetiersByCategorie } from "@bara/shared-types";
+import {
+  Search,
+  MapPin,
+  Briefcase,
+  ArrowRight,
+  Sparkles,
+  BadgeCheck,
+  ShieldCheck,
+  Fingerprint,
+  Info,
+  MessageSquare,
+  UserPlus,
+  Phone,
+  FilePlus,
+  Users,
+  CheckCircle2,
+  Check,
+  type LucideIcon,
+} from "lucide-react";
+import { METIERS } from "@bara/shared-types";
 import { getMetierIcon } from "@/lib/metier-icons";
+import { getFeaturedOffers, getWorkerProfiles } from "@/lib/data";
+import { buttonVariants, cn } from "@/components/ui";
+import { JobCard, CandidateCard, FilterChip } from "@/components/patterns";
 
 export const metadata: Metadata = {
   title: "Petits jobs en Côte d'Ivoire : trouver ou recruter | Bara",
@@ -17,289 +38,373 @@ export const metadata: Metadata = {
   },
 };
 
-const STEPS = [
-  {
-    icon: FileText,
-    title: "Crée ton CV en quelques minutes",
-    text: "Pas besoin de Word ni de modèle à télécharger : remplis tes informations, choisis un modèle et ton CV professionnel est prêt, directement dans l'application.",
-  },
-  {
-    icon: Rocket,
-    title: "Publie ton profil",
-    text: "Ton profil devient visible par les entreprises et les particuliers qui recrutent : métier, disponibilités, ville et CV en un seul endroit.",
-  },
-  {
-    icon: Handshake,
-    title: "Décroche ton bara",
-    text: "Réponds aux offres qui te correspondent ou laisse les recruteurs te contacter directement. Tu discutes, tu t'accordes, tu travailles.",
-  },
+const TRUST = [
+  { icon: ShieldCheck, title: "Profils vérifiés", text: "Chaque profil est soumis à une vérification avant d'être visible sur la plateforme." },
+  { icon: Fingerprint, title: "Identité contrôlée", text: "Une pièce d'identité valide (CNI, passeport) est demandée à l'inscription." },
+  { icon: Info, title: "Informations claires", text: "Tarifs, horaires et missions sont définis explicitement dès le départ." },
+  { icon: MessageSquare, title: "Mise en relation directe", text: "Discutez et accordez-vous en direct avec les recruteurs ou les candidats." },
 ] as const;
 
-const STATS = [
-  { value: "100%", label: "Gratuit au lancement" },
-  { value: "0 FCFA", label: "de frais caché" },
-  { value: "24/7", label: "profils visibles" },
+const CANDIDATE_STEPS = [
+  { icon: UserPlus, title: "Créez votre profil", text: "Complétez vos infos, vos expériences et votre pièce d'identité." },
+  { icon: Search, title: "Trouvez une mission", text: "Parcourez les offres autour de vous et postulez en un clic." },
+  { icon: Phone, title: "Contactez le recruteur", text: "Discutez des détails et démarrez la mission." },
 ] as const;
 
-export default function HomePage() {
-  const loopedMetiers = [...METIERS, ...METIERS];
+const RECRUITER_STEPS = [
+  { icon: FilePlus, title: "Publiez votre besoin", text: "Détaillez la mission, le lieu et la rémunération proposée." },
+  { icon: Users, title: "Trouvez un candidat", text: "Recevez des candidatures ou contactez directement les profils." },
+  { icon: CheckCircle2, title: "Concluez", text: "Validez les compétences et fixez le rendez-vous de la mission." },
+] as const;
+
+const CV_BULLETS = [
+  "Modèles modernes et élégants",
+  "Téléchargement PDF gratuit",
+  "Optimisé pour les recruteurs Bara",
+] as const;
+
+export default async function HomePage() {
+  const [featuredOffers, availableProfiles] = await Promise.all([
+    getFeaturedOffers(3),
+    getWorkerProfiles({ availableNow: true }),
+  ]);
+  const featuredProfiles = availableProfiles.slice(0, 4);
+  const popularMetiers = METIERS.slice(0, 12);
 
   return (
     <main>
-      {/* ---------------------------------------------------------- HERO */}
-      <section className="relative isolate overflow-hidden bg-night">
-        <div
-          aria-hidden
-          className="animate-blob absolute -left-24 -top-24 h-96 w-96 rounded-full bg-brand/40 blur-3xl"
-        />
-        <div
-          aria-hidden
-          className="animate-blob absolute -bottom-32 -right-16 h-[28rem] w-[28rem] rounded-full bg-accent/40 blur-3xl"
-          style={{ animationDelay: "-6s" }}
-        />
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgb(255_255_255/0.08)_1px,transparent_0)] [background-size:28px_28px]"
-        />
+      {/* ----------------------------------------------------------- HERO */}
+      <section className="bg-surface">
+        <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 py-16 lg:grid-cols-2 lg:py-24">
+          <div className="space-y-6">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1 text-xs font-semibold text-primary">
+              <Sparkles aria-hidden className="h-3.5 w-3.5" />
+              Le travail temporaire en Côte d'Ivoire
+            </span>
+            <h1 className="font-display text-4xl font-extrabold leading-tight tracking-tight text-foreground sm:text-5xl">
+              Le bon job.
+              <br />
+              La bonne personne.
+              <br />
+              <span className="text-primary">Au bon moment.</span>
+            </h1>
+            <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
+              Bara met en relation les personnes qui cherchent des petits jobs,
+              missions ponctuelles et emplois saisonniers avec ceux qui
+              recrutent. Simple, rapide et sécurisé.
+            </p>
 
-        <div className="relative mx-auto max-w-6xl px-4 pb-24 pt-16 sm:pt-24">
-          <div
-            className="animate-fade-up inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm"
-          >
-            <Sparkles aria-hidden className="h-4 w-4 text-brand" /> Fait pour la jeunesse ivoirienne
-          </div>
-
-          <h1 className="animate-fade-up anim-delay-1 font-display mt-6 max-w-3xl text-5xl font-bold leading-[1.05] tracking-tight text-white sm:text-6xl">
-            Le bon <span className="text-brand">bara</span>{" "}
-            pour chaque petit job en Côte d&apos;Ivoire
-          </h1>
-
-          <p className="animate-fade-up anim-delay-2 mt-6 max-w-xl text-lg leading-relaxed text-stone-300">
-            Bara met en relation les personnes qui cherchent des missions
-            ponctuelles, des jobs de vacances ou des prestations freelance
-            avec les entreprises et les particuliers qui recrutent. Crée ton
-            CV, publie ton profil, trouve ton bara.
-          </p>
-
-          <div className="animate-fade-up anim-delay-3 mt-9 flex flex-wrap gap-4">
-            <Link
-              href="/creer-un-cv"
-              className="btn-pop inline-flex items-center gap-2 rounded-full bg-brand px-7 py-3.5 font-semibold text-white"
+            {/* Barre de recherche — navigue vers /offres (câblage fin en FRONT-2) */}
+            <form
+              action="/offres"
+              method="get"
+              className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-3 shadow-sm md:flex-row md:items-center"
             >
-              Créer mon CV gratuitement
-              <ArrowRight aria-hidden className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/comment-ca-marche"
-              className="btn-pop inline-flex items-center rounded-full border border-white/20 bg-white/5 px-7 py-3.5 font-semibold text-white backdrop-blur-sm hover:bg-white/10"
-            >
-              Comment ça marche
-            </Link>
-          </div>
-
-          <dl className="animate-fade-up anim-delay-4 mt-16 grid max-w-lg grid-cols-3 gap-6 border-t border-white/10 pt-8">
-            {STATS.map((stat) => (
-              <div key={stat.label}>
-                <dt className="font-display text-2xl font-bold text-white sm:text-3xl">
-                  {stat.value}
-                </dt>
-                <dd className="mt-1 text-xs text-stone-400 sm:text-sm">
-                  {stat.label}
-                </dd>
+              <div className="flex flex-1 items-center gap-2 rounded-md border border-transparent bg-surface-2 px-3 py-2 focus-within:border-primary">
+                <Briefcase aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <input
+                  type="text"
+                  name="q"
+                  placeholder="Métier ou mot-clé"
+                  aria-label="Métier ou mot-clé"
+                  className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                />
               </div>
-            ))}
-          </dl>
-        </div>
-      </section>
-
-      {/* ------------------------------------------------ MARQUEE MÉTIERS */}
-      <section
-        aria-label="Métiers représentés sur Bara"
-        className="overflow-hidden border-b border-stone-200 bg-brand-light py-4"
-      >
-        <div className="animate-marquee flex w-max gap-3">
-          {loopedMetiers.map((metier, i) => {
-            const Icon = getMetierIcon(metier.slug);
-            return (
-              <span
-                key={`${metier.slug}-${i}`}
-                className="flex items-center gap-2 whitespace-nowrap rounded-full bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm"
+              <div className="flex flex-1 items-center gap-2 rounded-md border border-transparent bg-surface-2 px-3 py-2 focus-within:border-primary">
+                <MapPin aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <input
+                  type="text"
+                  name="lieu"
+                  placeholder="Abidjan, Bouaké…"
+                  aria-label="Lieu"
+                  className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                />
+              </div>
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
-                <Icon aria-hidden className="h-4 w-4 shrink-0 text-brand" />
-                {metier.label}
-              </span>
-            );
-          })}
-        </div>
-      </section>
+                <Search aria-hidden className="h-4 w-4" />
+                Rechercher
+              </button>
+            </form>
 
-      {/* --------------------------------------------------- COMMENT ÇA MARCHE */}
-      <section className="mx-auto max-w-6xl px-4 py-24">
-        <div className="max-w-xl">
-          <p className="text-sm font-bold uppercase tracking-widest text-brand">
-            Simple et rapide
-          </p>
-          <h2 className="font-display mt-2 text-3xl font-bold sm:text-4xl">
-            Comment ça marche
-          </h2>
-        </div>
-        <div className="mt-12 grid gap-6 sm:grid-cols-3">
-          {STEPS.map((step, i) => {
-            const Icon = step.icon;
-            return (
-              <article
-                key={step.title}
-                className="card-lift group relative rounded-2xl border border-stone-200 bg-white p-7"
+            <div className="flex flex-wrap gap-3">
+              <Link href="/offres" className={buttonVariants({ variant: "primary" })}>
+                Trouver un job
+              </Link>
+              <Link
+                href="/candidats"
+                className="inline-flex h-11 items-center justify-center rounded-md bg-accent-soft px-6 text-sm font-semibold text-accent transition-colors hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
-                <span
-                  aria-hidden
-                  className="absolute -top-4 -left-1 font-display text-6xl font-bold text-stone-100 transition-colors group-hover:text-brand-light"
-                >
-                  {i + 1}
-                </span>
-                <div className="relative">
-                  <span
-                    aria-hidden
-                    className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-light text-brand-dark"
-                  >
-                    <Icon className="h-6 w-6" />
-                  </span>
-                  <h3 className="mt-4 text-xl font-semibold">{step.title}</h3>
-                  <p className="mt-2 leading-relaxed text-stone-600">
-                    {step.text}
-                  </p>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      </section>
+                Trouver un candidat
+              </Link>
+            </div>
+          </div>
 
-      {/* ----------------------------------------- CANDIDATS / RECRUTEURS */}
-      <section className="bg-stone-50">
-        <div className="mx-auto grid max-w-6xl gap-6 px-4 py-24 sm:grid-cols-2">
-          <article className="card-lift rounded-3xl bg-gradient-to-br from-brand to-brand-dark p-9 text-white">
-            <span
+          {/* Visuel incliné + carte flottante (placeholder CSP-safe, vrai asset en FRONT-2) */}
+          <div className="relative hidden lg:block">
+            <div
               aria-hidden
-              className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/15"
+              className="absolute -right-8 -top-8 h-64 w-64 rounded-full bg-primary/10 blur-3xl"
+            />
+            <div
+              aria-hidden
+              className="relative aspect-[4/5] rotate-2 rounded-2xl border-4 border-surface bg-gradient-to-br from-primary via-primary-hover to-accent shadow-2xl transition-transform duration-500 hover:rotate-0"
+            />
+            <div className="absolute -bottom-6 -left-6 flex items-center gap-3 rounded-lg border border-border bg-surface p-4 shadow-xl">
+              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-success-soft text-success">
+                <BadgeCheck className="h-6 w-6" aria-hidden />
+              </span>
+              <div>
+                <p className="text-sm font-bold text-foreground">+5000 candidats</p>
+                <p className="text-xs text-muted-foreground">vérifiés ce mois</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ----------------------------------------------------- CATÉGORIES */}
+      <section className="bg-background">
+        <div className="mx-auto max-w-7xl px-4 py-16">
+          <div className="mb-6 flex items-end justify-between gap-4">
+            <div>
+              <h2 className="font-display text-2xl font-bold text-foreground">Parcourir par métier</h2>
+              <p className="text-sm text-muted-foreground">Les opportunités les plus demandées</p>
+            </div>
+            <Link
+              href="/metiers"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
             >
-              <UserRound className="h-6 w-6" />
-            </span>
-            <h2 className="font-display mt-4 text-2xl font-bold sm:text-3xl">
-              Tu cherches un job ?
+              Voir tous les métiers <ArrowRight aria-hidden className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {popularMetiers.map((metier) => (
+              <FilterChip key={metier.slug} href={`/metiers/${metier.slug}`} icon={getMetierIcon(metier.slug)}>
+                {metier.label}
+              </FilterChip>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* -------------------------------------------------- OFFRES RÉCENTES */}
+      {featuredOffers.length > 0 ? (
+        <section className="bg-primary-soft">
+          <div className="mx-auto max-w-7xl px-4 py-16">
+            <div className="mb-6 flex items-center justify-between gap-4">
+              <h2 className="font-display text-2xl font-bold text-foreground">Offres récentes</h2>
+              <Link href="/offres" className="text-sm font-semibold text-primary hover:underline">
+                Voir toutes les offres
+              </Link>
+            </div>
+            <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {featuredOffers.map((offer) => (
+                <li key={offer.id}>
+                  <JobCard offer={offer} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      ) : null}
+
+      {/* --------------------------------------------- CANDIDATS DISPONIBLES */}
+      {featuredProfiles.length > 0 ? (
+        <section className="bg-background">
+          <div className="mx-auto max-w-7xl px-4 py-16">
+            <div className="mb-6 flex items-center justify-between gap-4">
+              <h2 className="font-display text-2xl font-bold text-foreground">Candidats disponibles</h2>
+              <Link href="/candidats" className="text-sm font-semibold text-primary hover:underline">
+                Trouver un candidat
+              </Link>
+            </div>
+            <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+              {featuredProfiles.map((profile) => (
+                <li key={profile.id}>
+                  <CandidateCard profile={profile} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      ) : null}
+
+      {/* -------------------------------------------------------- CONFIANCE */}
+      <section className="bg-primary-soft">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 lg:grid-cols-2">
+          <div>
+            <h2 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
+              Pourquoi faire confiance à Bara ?
             </h2>
-            <p className="mt-4 leading-relaxed text-white/90">
-              Que tu sois graphiste, monteur vidéo, chauffeur, serveuse ou
-              étudiant à la recherche d&apos;un job de vacances, Bara te rend
-              visible auprès de ceux qui recrutent. Ton CV et ton profil
-              travaillent pour toi, même pendant que tu dors.
+            <p className="mt-3 text-muted-foreground">
+              Nous sécurisons chaque étape de la mise en relation pour garantir
+              votre sérénité.
             </p>
+            <ul className="mt-8 space-y-5">
+              {TRUST.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <li key={item.title} className="flex gap-4">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-surface text-primary shadow-sm">
+                      <Icon className="h-6 w-6" aria-hidden />
+                    </span>
+                    <div>
+                      <h3 className="font-semibold text-foreground">{item.title}</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">{item.text}</p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+          {/* Visuel de confiance (placeholder décoratif) */}
+          <div aria-hidden className="hidden lg:block">
+            <div className="flex aspect-square items-center justify-center rounded-3xl bg-gradient-to-br from-primary via-primary-hover to-accent shadow-xl">
+              <ShieldCheck className="h-32 w-32 text-primary-foreground/90" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------ COMMENT ÇA MARCHE */}
+      <section className="bg-background">
+        <div className="mx-auto max-w-7xl px-4 py-16">
+          <div className="mb-10 text-center">
+            <h2 className="font-display text-2xl font-bold text-foreground sm:text-3xl">Comment ça marche ?</h2>
+            <p className="mt-2 text-muted-foreground">Choisissez votre profil pour commencer</p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2">
+            <StepColumn title="Je suis candidat" index={1} tone="primary" steps={CANDIDATE_STEPS} />
+            <StepColumn title="Je suis recruteur" index={2} tone="accent" steps={RECRUITER_STEPS} />
+          </div>
+        </div>
+      </section>
+
+      {/* -------------------------------------------------------- CV BANNER */}
+      <section className="mx-auto max-w-7xl px-4 py-16">
+        <div className="grid items-stretch overflow-hidden rounded-3xl bg-primary text-primary-foreground lg:grid-cols-2">
+          <div className="space-y-4 p-8 lg:p-12">
+            <h2 className="font-display text-2xl font-bold sm:text-3xl">
+              Créez votre CV directement sur Bara
+            </h2>
+            <p className="text-primary-foreground/90">
+              Pas besoin d'ordinateur ni de logiciel : un CV professionnel prêt à
+              l'emploi en quelques minutes.
+            </p>
+            <ul className="space-y-2">
+              {CV_BULLETS.map((b) => (
+                <li key={b} className="flex items-center gap-2 text-sm">
+                  <Check aria-hidden className="h-4 w-4 shrink-0" />
+                  {b}
+                </li>
+              ))}
+            </ul>
             <Link
               href="/creer-un-cv"
-              className="btn-pop mt-6 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 font-semibold text-brand-dark"
+              className="inline-flex items-center gap-2 rounded-md bg-surface px-6 py-3 text-sm font-semibold text-primary transition-colors hover:bg-surface-2"
             >
-              Créer mon profil <ArrowRight aria-hidden className="h-4 w-4" />
+              Créer mon CV <ArrowRight aria-hidden className="h-4 w-4" />
             </Link>
-          </article>
-
-          <article className="card-lift rounded-3xl bg-gradient-to-br from-accent to-violet-800 p-9 text-white">
-            <span
-              aria-hidden
-              className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/15"
-            >
-              <Building2 className="h-6 w-6" />
-            </span>
-            <h2 className="font-display mt-4 text-2xl font-bold sm:text-3xl">
-              Tu recrutes ?
-            </h2>
-            <p className="mt-4 leading-relaxed text-white/90">
-              Entreprise ou particulier, publie une offre en précisant la
-              mission, le budget et la période — ou parcours directement
-              notre base de profils prêts à travailler. Fini les recherches
-              interminables sur les réseaux sociaux.
-            </p>
-            <Link
-              href="/comment-ca-marche"
-              className="btn-pop mt-6 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 font-semibold text-accent"
-            >
-              Publier une offre <ArrowRight aria-hidden className="h-4 w-4" />
-            </Link>
-          </article>
-        </div>
-      </section>
-
-      {/* --------------------------------------------------------- MÉTIERS */}
-      <section className="mx-auto max-w-6xl px-4 py-24">
-        <div className="max-w-xl">
-          <p className="text-sm font-bold uppercase tracking-widest text-brand">
-            Tous les talents
-          </p>
-          <h2 className="font-display mt-2 text-3xl font-bold sm:text-4xl">
-            Des profils pour tous les métiers
-          </h2>
-          <p className="mt-4 leading-relaxed text-stone-600">
-            {METIERS.length} métiers déjà couverts par Bara, du renfort à
-            domicile à la création de contenu. Et la liste s&apos;agrandit
-            avec vous.
-          </p>
-        </div>
-
-        <div className="mt-12 space-y-12">
-          {METIER_CATEGORIES.map((categorie) => (
-            <div key={categorie.slug}>
-              <h3 className="text-lg font-bold text-stone-900">
-                {categorie.label}
-              </h3>
-              <ul className="mt-4 flex flex-wrap gap-3">
-                {getMetiersByCategorie(categorie.slug).map((metier) => {
-                  const Icon = getMetierIcon(metier.slug);
-                  return (
-                    <li key={metier.slug}>
-                      <Link
-                        href={`/metiers/${metier.slug}`}
-                        className="card-lift flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2.5 text-sm font-medium hover:border-brand"
-                      >
-                        <Icon aria-hidden className="h-4 w-4 shrink-0 text-brand" />
-                        {metier.label}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
+          </div>
+          {/* Panneau droit distinct (plus clair) avec aperçu CV */}
+          <div aria-hidden className="hidden items-center justify-center bg-white/10 p-10 lg:flex">
+            <div className="w-full max-w-sm rotate-3 space-y-3 rounded-lg bg-surface p-5 shadow-2xl">
+              <div className="flex items-center gap-3 border-b border-border pb-4">
+                <div className="h-12 w-12 rounded-full bg-muted" />
+                <div className="space-y-1.5">
+                  <div className="h-3 w-32 rounded bg-muted" />
+                  <div className="h-2 w-20 rounded bg-muted" />
+                </div>
+              </div>
+              <div className="h-2 w-full rounded bg-muted" />
+              <div className="h-2 w-full rounded bg-muted" />
+              <div className="h-2 w-2/3 rounded bg-muted" />
+              <div className="mt-4 border-t border-border pt-3">
+                <div className="mb-2 h-3 w-24 rounded bg-primary-soft" />
+                <div className="flex gap-2">
+                  <div className="h-4 w-12 rounded bg-primary-soft" />
+                  <div className="h-4 w-12 rounded bg-primary-soft" />
+                </div>
+              </div>
             </div>
-          ))}
+          </div>
         </div>
-
-        <Link
-          href="/metiers"
-          className="mt-10 inline-flex items-center gap-1.5 font-semibold text-brand hover:underline"
-        >
-          Voir tous les métiers <ArrowRight aria-hidden className="h-4 w-4" />
-        </Link>
       </section>
 
-      {/* ------------------------------------------------------------ CTA */}
-      <section className="relative isolate overflow-hidden bg-night">
-        <div
+      {/* ------------------------------------------------------- CTA FINAL */}
+      <section className="relative overflow-hidden bg-surface-2">
+        <Briefcase
           aria-hidden
-          className="animate-blob absolute left-1/2 top-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand/30 blur-3xl"
+          className="pointer-events-none absolute -right-6 top-0 h-64 w-64 text-primary/10"
         />
-        <div className="relative mx-auto max-w-2xl px-4 py-24 text-center">
-          <h2 className="font-display text-3xl font-bold text-white sm:text-4xl">
-            Ton bara t&apos;attend.
+        <div className="relative mx-auto max-w-3xl px-4 py-20 text-center">
+          <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
+            Une opportunité peut commencer aujourd'hui.
           </h2>
-          <p className="mt-4 text-lg text-stone-300">
-            Crée ton CV maintenant, c&apos;est gratuit et ça prend cinq
-            minutes.
+          <p className="mt-4 text-lg text-muted-foreground">
+            Rejoignez ceux qui font bouger la Côte d'Ivoire.
           </p>
-          <Link
-            href="/creer-un-cv"
-            className="btn-pop mt-8 inline-flex items-center gap-2 rounded-full bg-brand px-8 py-4 font-semibold text-white"
-          >
-            Créer mon CV gratuitement <ArrowRight aria-hidden className="h-4 w-4" />
-          </Link>
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            <Link href="/inscription" className={buttonVariants({ variant: "primary", size: "lg" })}>
+              Je cherche un job
+            </Link>
+            <Link href="/inscription" className={buttonVariants({ variant: "outline", size: "lg" })}>
+              Je recrute
+            </Link>
+          </div>
         </div>
       </section>
     </main>
+  );
+}
+
+// Colonne « Comment ça marche » — spécifique à l'accueil. Couleur par profil :
+// candidat = primary (bleu), recruteur = accent (teal), avec ligne de liaison.
+function StepColumn({
+  title,
+  index,
+  tone,
+  steps,
+}: {
+  title: string;
+  index: number;
+  tone: "primary" | "accent";
+  steps: readonly { icon: LucideIcon; title: string; text: string }[];
+}) {
+  const isTeal = tone === "accent";
+  const numBg = isTeal ? "bg-accent" : "bg-primary";
+  const circle = isTeal ? "border-accent text-accent" : "border-primary text-primary";
+  const line = isTeal ? "bg-accent/20" : "bg-primary/20";
+  const panel = isTeal ? "border-accent-soft bg-accent-soft/40" : "border-border bg-surface";
+
+  return (
+    <div className={cn("rounded-lg border p-6", panel)}>
+      <div className="mb-6 flex items-center gap-3">
+        <div className={cn("flex h-10 w-10 items-center justify-center rounded-full font-bold text-white", numBg)}>
+          {index}
+        </div>
+        <h3 className="font-display text-xl font-bold text-foreground">{title}</h3>
+      </div>
+      <ol className="relative space-y-6">
+        <span aria-hidden className={cn("absolute bottom-3 left-5 top-3 w-0.5", line)} />
+        {steps.map((step) => {
+          const Icon = step.icon;
+          return (
+            <li key={step.title} className="relative flex gap-4">
+              <span className={cn("relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 bg-surface", circle)}>
+                <Icon className="h-5 w-5" aria-hidden />
+              </span>
+              <div className="pt-1.5">
+                <h4 className="font-semibold text-foreground">{step.title}</h4>
+                <p className="mt-0.5 text-sm text-muted-foreground">{step.text}</p>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
   );
 }

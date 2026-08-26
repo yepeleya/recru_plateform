@@ -7,7 +7,7 @@ import {
   getMetierBySlug,
   getMetiersByCategorie,
 } from "@bara/shared-types";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronRight } from "lucide-react";
 import { buildMetierDescription, buildMetierTitle } from "@/lib/metier-seo";
 import { getMetierIcon } from "@/lib/metier-icons";
 
@@ -50,70 +50,73 @@ export default async function MetierPage({
 
   return (
     <main>
-      <section className="border-b border-stone-200 bg-brand-light">
-        <div className="mx-auto max-w-3xl px-4 py-14">
-          <nav aria-label="Fil d'Ariane" className="text-sm text-stone-600">
-            <Link href="/" className="hover:text-brand">
-              Accueil
-            </Link>{" "}
-            <span aria-hidden>/</span>{" "}
-            <Link href="/metiers" className="hover:text-brand">
-              Métiers
-            </Link>{" "}
-            <span aria-hidden>/</span> <span className="text-ink">{metier.label}</span>
+      {/* Hero SEO */}
+      <section className="bg-primary-soft">
+        <div className="mx-auto max-w-7xl px-4 py-14 md:px-6">
+          <nav
+            aria-label="Fil d'Ariane"
+            className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground"
+          >
+            <Link href="/" className="transition-colors hover:text-primary">Accueil</Link>
+            <ChevronRight aria-hidden className="h-4 w-4" />
+            <Link href="/metiers" className="transition-colors hover:text-primary">Métiers</Link>
+            <ChevronRight aria-hidden className="h-4 w-4" />
+            <span className="font-semibold text-primary">{metier.label}</span>
           </nav>
 
-          <div className="mt-4 flex items-center gap-4">
+          <div className="mt-5 flex items-center gap-4">
             <span
               aria-hidden
-              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brand-light text-brand-dark"
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-surface text-primary shadow-sm"
             >
               <MetierIcon className="h-7 w-7" />
             </span>
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-brand-dark">
+              <p className="text-xs font-bold uppercase tracking-widest text-primary">
                 {categorieInfo?.label}
               </p>
-              <h1 className="font-display text-3xl font-bold leading-tight sm:text-4xl">{metier.label} en Côte d&apos;Ivoire</h1>
+              <h1 className="font-display text-3xl font-bold leading-tight text-foreground sm:text-4xl">
+                {`${metier.label} en Côte d'Ivoire`}
+              </h1>
             </div>
           </div>
 
-          <p className="mt-5 max-w-xl text-lg leading-relaxed text-stone-700">
-            {metier.blurb} Sur Bara, trouve un profil {metier.label.toLowerCase()}{" "}
-            près de chez toi, ou fais-toi connaître si c&apos;est ton métier.
+          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+            {`${metier.blurb} Sur Bara, trouve un profil ${metier.label.toLowerCase()} près de chez toi, ou fais-toi connaître si c'est ton métier.`}
           </p>
         </div>
       </section>
 
-      <section className="mx-auto max-w-3xl px-4 py-16">
-        <div className="grid gap-6 sm:grid-cols-2">
-          <article className="card-lift rounded-2xl bg-gradient-to-br from-brand to-brand-dark p-7 text-white">
+      {/* Contenu */}
+      <section className="mx-auto max-w-7xl px-4 py-16 md:px-6">
+        <div className="grid gap-6 md:grid-cols-2">
+          <article className="rounded-lg bg-gradient-to-br from-primary to-primary-hover p-7 text-primary-foreground shadow-sm">
             <h2 className="font-display text-xl font-bold">
-              Tu es {metier.label.toLowerCase()} ?
+              {`Tu es ${metier.label.toLowerCase()} ?`}
             </h2>
-            <p className="mt-3 text-sm leading-relaxed text-white/90">
+            <p className="mt-3 text-sm leading-relaxed text-primary-foreground/90">
               Crée ton CV et publie ton profil pour être visible auprès des
               recruteurs qui cherchent ce métier.
             </p>
             <Link
               href="/creer-un-cv"
-              className="btn-pop mt-5 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-brand-dark"
+              className="mt-5 inline-flex items-center gap-2 rounded-md bg-surface px-5 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-surface-2"
             >
               Créer mon profil <ArrowRight aria-hidden className="h-4 w-4" />
             </Link>
           </article>
 
-          <article className="card-lift rounded-2xl bg-gradient-to-br from-accent to-violet-800 p-7 text-white">
+          <article className="rounded-lg bg-gradient-to-br from-accent to-accent-hover p-7 text-accent-foreground shadow-sm">
             <h2 className="font-display text-xl font-bold">
-              Tu recherches un·e {metier.label.toLowerCase()} ?
+              {`Tu recherches un·e ${metier.label.toLowerCase()} ?`}
             </h2>
-            <p className="mt-3 text-sm leading-relaxed text-white/90">
+            <p className="mt-3 text-sm leading-relaxed text-accent-foreground/90">
               Inscris-toi pour publier une offre ou parcourir les profils
               disponibles sur Bara.
             </p>
             <Link
               href="/inscription"
-              className="btn-pop mt-5 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-accent"
+              className="mt-5 inline-flex items-center gap-2 rounded-md bg-surface px-5 py-2.5 text-sm font-semibold text-accent transition-colors hover:bg-surface-2"
             >
               Publier une offre <ArrowRight aria-hidden className="h-4 w-4" />
             </Link>
@@ -122,7 +125,7 @@ export default async function MetierPage({
 
         {siblings.length > 0 && (
           <div className="mt-16">
-            <h2 className="text-lg font-bold text-stone-900">
+            <h2 className="text-lg font-bold text-foreground">
               Autres métiers en {categorieInfo?.label.toLowerCase()}
             </h2>
             <ul className="mt-4 flex flex-wrap gap-3">
@@ -132,9 +135,9 @@ export default async function MetierPage({
                   <li key={sibling.slug}>
                     <Link
                       href={`/metiers/${sibling.slug}`}
-                      className="card-lift flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2.5 text-sm font-medium hover:border-brand"
+                      className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      <SiblingIcon aria-hidden className="h-4 w-4 shrink-0 text-brand" />
+                      <SiblingIcon aria-hidden className="h-4 w-4 shrink-0 text-primary" />
                       {sibling.label}
                     </Link>
                   </li>
@@ -144,8 +147,8 @@ export default async function MetierPage({
           </div>
         )}
 
-        <p className="mt-10 text-sm text-stone-500">
-          <Link href="/metiers" className="font-medium text-brand hover:underline">
+        <p className="mt-10 text-sm text-muted-foreground">
+          <Link href="/metiers" className="font-medium text-primary hover:underline">
             ← Voir tous les métiers sur Bara
           </Link>
         </p>

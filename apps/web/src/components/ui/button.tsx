@@ -11,7 +11,7 @@ export type ButtonVariant =
 export type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 const BASE =
-  "inline-flex items-center justify-center gap-2 rounded-full font-semibold whitespace-nowrap " +
+  "inline-flex items-center justify-center gap-2 rounded-md font-semibold whitespace-nowrap " +
   "select-none transition-[transform,background-color,box-shadow,color,border-color] duration-150 ease-out " +
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 " +
   "focus-visible:ring-offset-background active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60 " +

@@ -9,19 +9,8 @@ export const metadata: Metadata = {
 
 export default function InscriptionPage() {
   return (
-    <main className="bg-stone-50 py-16">
-      <div className="mx-auto max-w-3xl px-4">
-        <div className="mb-8 text-center">
-          <h1 className="font-display text-3xl font-bold sm:text-4xl">
-            Rejoins Bara
-          </h1>
-          <p className="mt-3 text-stone-600">
-            Candidat ou recruteur, particulier ou entreprise : ton inscription
-            s&apos;adapte à ton profil.
-          </p>
-        </div>
-        <SignupWizard />
-      </div>
+    <main className="mx-auto max-w-7xl px-4 py-10 md:px-6">
+      <SignupWizard />
     </main>
   );
 }
