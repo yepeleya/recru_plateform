@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { Plus, Trash2, Upload, CheckCircle2, Save, Download, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Plus, Trash2, Upload, CheckCircle2, Download, Loader2, AlertCircle } from "lucide-react";
 import type {
   CvContent,
   EducationEntry,
@@ -13,7 +13,10 @@ import type {
   ProjectEntry,
 } from "@bara/shared-types";
 import { CI_SECTION_VISIBILITY, VISIBILITY_LABELS } from "@/lib/cv-sections";
-import { loadCvDraft, saveCvDraft } from "@/lib/cv-storage";
+import { loadCvDraft, saveCvDraft, clearCvDraft } from "@/lib/cv-storage";
+import { useAuth } from "@/lib/auth/auth-context";
+import { getCvById, saveGeneratedCv, updateGeneratedCv, ApiError } from "@/lib/api";
+import { Button } from "@/components/ui";
 import {
   CV_TEMPLATES,
   DEFAULT_TEMPLATE_ID,
@@ -117,21 +120,46 @@ function EntryCard({
   );
 }
 
-export function CvEditor() {
+export function CvEditor({ cvId }: { cvId?: string }) {
+  const router = useRouter();
+  const { me, loading: authLoading } = useAuth();
+  const isEditMode = Boolean(cvId);
+
   const [title, setTitle] = useState("Mon CV");
   const [content, setContent] = useState<CvContent>(EMPTY_CONTENT);
   const [templateId, setTemplateId] = useState<CvTemplateId>(DEFAULT_TEMPLATE_ID);
   const [savedAt, setSavedAt] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const isFirstRender = useRef(true);
 
+  // Édition d'un CV généré existant : la source de vérité est l'API (GET /cvs/:id),
+  // jamais un ancien brouillon localStorage. Création : on restaure le brouillon local.
   useEffect(() => {
+    if (cvId) {
+      let cancelled = false;
+      getCvById(cvId)
+        .then((cv) => {
+          if (cancelled) return;
+          setTitle(cv.title);
+          if (cv.content) setContent(cv.content);
+          setTemplateId(getTemplate(cv.templateId ?? undefined).id);
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          setSaveError(err instanceof ApiError ? err.message : "Impossible de charger ce CV.");
+        });
+      return () => {
+        cancelled = true;
+      };
+    }
     const draft = loadCvDraft();
     if (draft) {
       setTitle(draft.title);
       setContent(draft.content);
       setTemplateId(getTemplate(draft.templateId).id);
     }
-  }, []);
+  }, [cvId]);
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -144,6 +172,36 @@ export function CvEditor() {
     }, 600);
     return () => clearTimeout(timeout);
   }, [title, content, templateId]);
+
+  // Sauvegarde RÉELLE en base : POST /cvs (création) ou PATCH /cvs/:id (édition).
+  // Le CV n'est considéré sauvegardé qu'après la réponse API. La double soumission
+  // est empêchée par `saving`. Les messages d'erreur viennent de la gestion
+  // centralisée (ApiError / messageForStatus) via err.message.
+  async function handleSaveToApi() {
+    if (saving) return;
+    setSaveError(null);
+    // Non authentifié : on conserve le brouillon local et on renvoie vers la connexion.
+    if (!authLoading && !me) {
+      saveCvDraft(title, content, templateId);
+      router.push("/connexion");
+      return;
+    }
+    setSaving(true);
+    try {
+      const input = { content, title, templateId };
+      if (cvId) {
+        await updateGeneratedCv(cvId, input);
+      } else {
+        await saveGeneratedCv(input);
+      }
+      // Succès confirmé par l'API : le brouillon local n'est plus la source de vérité.
+      clearCvDraft();
+      router.push("/candidat/cv");
+    } catch (err) {
+      setSaveError(err instanceof ApiError ? err.message : "La sauvegarde a échoué.");
+      setSaving(false);
+    }
+  }
 
   function updatePersonal<K extends keyof CvContent["personalInfo"]>(
     key: K,
@@ -728,45 +786,38 @@ export function CvEditor() {
           />
         </section>
 
-        {/* -------------------------------------------------- ENREGISTRER / PUBLIER */}
-        <div className="cv-editor-actions rounded-2xl border border-stone-200 bg-stone-50 p-5">
-          <h2 className="font-display text-lg font-bold">Enregistrer et publier</h2>
-          <p className="mt-1.5 text-sm leading-relaxed text-stone-600">
-            Ton CV est enregistré automatiquement au fur et à mesure que tu le
-            remplis. Tu peux aussi le télécharger, ou le publier pour que les
-            recruteurs te trouvent sur Bara.
+        {/* ------------------------------------------------------- SAUVEGARDE (API) */}
+        <div className="rounded-md border border-border bg-surface-2 p-5 print:hidden">
+          <h2 className="text-lg font-bold text-foreground">
+            {isEditMode ? "Enregistrer les modifications" : "Sauvegarder votre CV"}
+          </h2>
+          <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+            Votre CV est enregistré en base sur votre compte Bara. Il devient votre CV
+            actif et pourra être utilisé pour postuler aux offres.
           </p>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <button
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <Button
               type="button"
-              onClick={() => {
-                saveCvDraft(title, content, templateId);
-                setSavedAt(
-                  new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
-                );
-              }}
-              className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-5 py-2.5 text-sm font-semibold text-stone-700 hover:bg-stone-100"
+              onClick={() => void handleSaveToApi()}
+              disabled={saving}
+              aria-busy={saving}
             >
-              <Save className="h-4 w-4" aria-hidden /> Enregistrer maintenant
-            </button>
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-5 py-2.5 text-sm font-semibold text-stone-700 hover:bg-stone-100"
-            >
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
+              {saving ? "Sauvegarde en cours…" : "Sauvegarder mon CV"}
+            </Button>
+            <Button type="button" variant="outline" onClick={() => window.print()}>
               <Download className="h-4 w-4" aria-hidden /> Télécharger en PDF
-            </button>
-            <Link
-              href="/inscription"
-              className="btn-pop ml-auto inline-flex items-center gap-1.5 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white"
-            >
-              Publier mon profil <ArrowRight aria-hidden className="h-4 w-4" />
-            </Link>
+            </Button>
           </div>
-          <p className="mt-3 text-xs leading-relaxed text-stone-500">
-            Publier ton profil rend ton CV visible par les recruteurs sur
-            Bara — ça nécessite un compte, pour que ce soit bien toi qui gères
-            tes candidatures.
+          {saveError ? (
+            <p role="alert" className="mt-3 flex items-center gap-1.5 text-sm text-danger">
+              <AlertCircle className="h-4 w-4 shrink-0" aria-hidden /> {saveError}
+            </p>
+          ) : null}
+          <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+            Votre travail est aussi gardé automatiquement comme brouillon local pendant
+            que vous remplissez le formulaire — la sauvegarde ci-dessus reste la version
+            de référence sur votre compte.
           </p>
         </div>
       </div>

@@ -193,7 +193,7 @@ export function CvManager() {
                 </a>
               ) : (
                 <Link
-                  href="/creer-un-cv/nouveau"
+                  href={`/creer-un-cv/nouveau?cvId=${cv.id}`}
                   className={buttonVariants({ variant: "secondary", size: "sm" })}
                 >
                   <FilePen className="h-4 w-4" aria-hidden /> Modifier

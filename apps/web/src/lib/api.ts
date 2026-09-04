@@ -178,6 +178,18 @@ export async function saveGeneratedCv(input: SaveCvInput): Promise<Cv> {
   return data.cv;
 }
 
+/** PATCH /cvs/:id — met à jour le CV *généré* du candidat (édition). */
+export async function updateGeneratedCv(id: string, input: SaveCvInput): Promise<Cv> {
+  const res = await call(`/cvs/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  const data = (await res.json()) as CvEnvelope;
+  if (!data.cv) throw new ApiError("Réponse inattendue du serveur.", 0);
+  return data.cv;
+}
+
 /**
  * POST /cvs/import — importe (ou remplace) un CV PDF. On ne fixe PAS Content-Type :
  * le navigateur ajoute le boundary multipart. La validation (PDF, magic-byte,
