@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 export default async function NouveauCvPage({
   searchParams,
 }: {
-  searchParams: Promise<{ cvId?: string }>;
+  searchParams: Promise<{ cvId?: string; returnTo?: string }>;
 }) {
-  const { cvId } = await searchParams;
+  const { cvId, returnTo } = await searchParams;
   return (
     <main className="bg-surface-2 py-10">
       <div className="mx-auto max-w-6xl px-4">
@@ -22,7 +22,7 @@ export default async function NouveauCvPage({
           Remplissez vos informations à gauche, votre CV se met à jour en direct à droite.
         </p>
         <div className="mt-8">
-          <CvEditor cvId={cvId} />
+          <CvEditor cvId={cvId} returnTo={returnTo} />
         </div>
       </div>
     </main>

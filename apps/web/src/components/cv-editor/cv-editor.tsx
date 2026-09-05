@@ -16,6 +16,7 @@ import { CI_SECTION_VISIBILITY, VISIBILITY_LABELS } from "@/lib/cv-sections";
 import { loadCvDraft, saveCvDraft, clearCvDraft } from "@/lib/cv-storage";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getCvById, saveGeneratedCv, updateGeneratedCv, ApiError } from "@/lib/api";
+import { safeInternalPath } from "@/lib/safe-redirect";
 import { Button } from "@/components/ui";
 import {
   CV_TEMPLATES,
@@ -120,8 +121,11 @@ function EntryCard({
   );
 }
 
-export function CvEditor({ cvId }: { cvId?: string }) {
+export function CvEditor({ cvId, returnTo }: { cvId?: string; returnTo?: string }) {
   const router = useRouter();
+  // Destination après sauvegarde : `returnTo` interne sûr (ex. l'offre d'origine),
+  // sinon l'espace CV du candidat.
+  const destination = safeInternalPath(returnTo, "/candidat/cv");
   const { me, loading: authLoading } = useAuth();
   const isEditMode = Boolean(cvId);
 
@@ -183,7 +187,7 @@ export function CvEditor({ cvId }: { cvId?: string }) {
     // Non authentifié : on conserve le brouillon local et on renvoie vers la connexion.
     if (!authLoading && !me) {
       saveCvDraft(title, content, templateId);
-      router.push("/connexion");
+      router.push(`/connexion?next=${encodeURIComponent(destination)}`);
       return;
     }
     setSaving(true);
@@ -196,7 +200,7 @@ export function CvEditor({ cvId }: { cvId?: string }) {
       }
       // Succès confirmé par l'API : le brouillon local n'est plus la source de vérité.
       clearCvDraft();
-      router.push("/candidat/cv");
+      router.push(destination);
     } catch (err) {
       setSaveError(err instanceof ApiError ? err.message : "La sauvegarde a échoué.");
       setSaving(false);

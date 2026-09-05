@@ -16,10 +16,14 @@ const NETWORK_ERROR_MESSAGE =
 /** Erreur API structurée : conserve le statut HTTP et le message backend. */
 export class ApiError extends Error {
   status: number;
-  constructor(message: string, status: number) {
+  // Code métier stable optionnel renvoyé par l'API (CV_REQUIRED,
+  // DUPLICATE_APPLICATION, OFFER_NOT_OPEN…). Permet un mapping UI précis.
+  code?: string;
+  constructor(message: string, status: number, code?: string) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.code = code;
   }
 }
 
@@ -50,14 +54,16 @@ function messageForStatus(status: number, backendMessage: string | null): string
   }
 }
 
-async function readError(res: Response): Promise<string | null> {
+async function readError(
+  res: Response,
+): Promise<{ message: string | null; code: string | null }> {
   try {
-    const data = (await res.json()) as { message?: string | string[] } | null;
+    const data = (await res.json()) as { message?: string | string[]; code?: string } | null;
     const msg = data?.message;
-    if (!msg) return null;
-    return Array.isArray(msg) ? msg.join(" ") : msg;
+    const message = !msg ? null : Array.isArray(msg) ? msg.join(" ") : msg;
+    return { message, code: data?.code ?? null };
   } catch {
-    return null;
+    return { message: null, code: null };
   }
 }
 
@@ -72,9 +78,9 @@ async function call(endpoint: string, init: RequestInit): Promise<Response> {
     throw new ApiError(NETWORK_ERROR_MESSAGE, 0);
   }
   if (!res.ok) {
-    const backendMessage = await readError(res);
+    const { message: backendMessage, code } = await readError(res);
     devLog(endpoint, res.status, backendMessage);
-    throw new ApiError(messageForStatus(res.status, backendMessage), res.status);
+    throw new ApiError(messageForStatus(res.status, backendMessage), res.status, code ?? undefined);
   }
   return res;
 }
@@ -213,4 +219,84 @@ export async function deleteCv(id: string): Promise<void> {
 /** URL de consultation/téléchargement du PDF d'un CV importé (endpoint protégé). */
 export function cvFileUrl(id: string): string {
   return `${API_URL}/cvs/${id}/file`;
+}
+
+// ============================================================================
+// Offres publiques (P0-4.4) — lecture SANS authentification. Utilisable côté
+// serveur (fetch serveur, SEO) comme côté client. `cache: "no-store"` : données
+// fraîches. La forme JSON reflète le contrat réel de l'API (champs nullables).
+// ============================================================================
+
+export interface JobOfferApi {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  metierSlug: string;
+  type: string;
+  city: string;
+  area: string | null;
+  budgetMin: number | null;
+  budgetMax: number | null;
+  budgetLabel: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  status: string;
+  recruiterId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OffersPage {
+  items: JobOfferApi[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface PublicOffersQuery {
+  page?: number;
+  pageSize?: number;
+  metier?: string;
+  city?: string;
+  type?: string;
+  q?: string;
+}
+
+/** GET /job-offers — liste publique (offres publiées), paginée + filtrable. */
+export async function fetchPublicOffers(query: PublicOffersQuery = {}): Promise<OffersPage> {
+  const params = new URLSearchParams();
+  if (query.page) params.set("page", String(query.page));
+  if (query.pageSize) params.set("pageSize", String(query.pageSize));
+  if (query.metier) params.set("metier", query.metier);
+  if (query.city) params.set("city", query.city);
+  if (query.type) params.set("type", query.type);
+  if (query.q) params.set("q", query.q);
+  const qs = params.toString();
+  const res = await call(`/job-offers${qs ? `?${qs}` : ""}`, { method: "GET", cache: "no-store" });
+  return (await res.json()) as OffersPage;
+}
+
+/** GET /job-offers/:id — détail public (offre publiée uniquement, sinon 404). */
+export async function fetchPublicOfferById(id: string): Promise<JobOfferApi> {
+  const res = await call(`/job-offers/${encodeURIComponent(id)}`, {
+    method: "GET",
+    cache: "no-store",
+  });
+  const data = (await res.json()) as { offer: JobOfferApi };
+  return data.offer;
+}
+
+// ============================================================================
+// Candidatures (P0-4.4) — POST /applications. Le backend dérive candidateId, cvId
+// et recruiterId de la SESSION : le frontend n'envoie que l'offre (+ message libre
+// optionnel). Aucune donnée sensible ni identifiant d'utilisateur côté client.
+// ============================================================================
+
+export async function createApplication(jobOfferId: string, message?: string): Promise<void> {
+  await call("/applications", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(message ? { jobOfferId, message } : { jobOfferId }),
+  });
 }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { loginWithCredentials } from "@/lib/api";
+import { safeInternalPath } from "@/lib/safe-redirect";
 
 const inputClass =
   "w-full rounded-lg border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-stone-400 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20";
@@ -24,7 +25,13 @@ export function LoginForm() {
     setLoading(true);
     try {
       await loginWithCredentials(email, password);
-      router.replace("/");
+      // Retour au contexte d'origine si `?next` est un chemin interne sûr
+      // (ex. l'offre consultée avant d'être renvoyé vers la connexion).
+      const next =
+        typeof window !== "undefined"
+          ? new URLSearchParams(window.location.search).get("next")
+          : null;
+      router.replace(safeInternalPath(next, "/"));
     } catch (err) {
       setError(
         err instanceof Error

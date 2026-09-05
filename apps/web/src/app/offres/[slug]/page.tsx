@@ -16,6 +16,7 @@ import { getMetierIcon } from "@/lib/metier-icons";
 import { formatBudget, jobTypeLabel } from "@/lib/offer-format";
 import { getOffers, getOfferBySlug } from "@/lib/data";
 import { JobCard, EmptyState } from "@/components/patterns";
+import { ApplyButton } from "@/components/applications/apply-button";
 
 // Génère les routes statiques depuis lib/data (jamais lib/mock directement).
 export async function generateStaticParams() {
@@ -173,12 +174,7 @@ export default async function OffreDetailPage({
             </dl>
 
             <div className="space-y-3 pt-1">
-              <Link
-                href={APPLY_HREF}
-                className="flex w-full items-center justify-center rounded-md bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              >
-                Contacter le recruteur
-              </Link>
+              <ApplyButton offerId={offer.id} offerSlug={offer.slug} className="w-full" />
               <Link
                 href={APPLY_HREF}
                 className="flex w-full items-center justify-center gap-2 rounded-md border-2 border-primary px-4 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -238,12 +234,12 @@ export default async function OffreDetailPage({
         >
           <Heart aria-hidden className="h-5 w-5" />
         </Link>
-        <Link
-          href={APPLY_HREF}
-          className="flex flex-1 items-center justify-center rounded-md bg-primary py-3 text-sm font-semibold text-primary-foreground shadow-sm active:scale-[0.99]"
-        >
-          Postuler maintenant
-        </Link>
+        <ApplyButton
+          offerId={offer.id}
+          offerSlug={offer.slug}
+          label="Postuler maintenant"
+          className="flex-1"
+        />
       </div>
     </main>
   );
