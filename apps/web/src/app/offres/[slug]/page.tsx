@@ -17,6 +17,7 @@ import { formatBudget, jobTypeLabel } from "@/lib/offer-format";
 import { getOffers, getOfferBySlug } from "@/lib/data";
 import { JobCard, EmptyState } from "@/components/patterns";
 import { ApplyButton } from "@/components/applications/apply-button";
+import { ApplyProvider } from "@/components/applications/apply-provider";
 
 // Génère les routes statiques depuis lib/data (jamais lib/mock directement).
 export async function generateStaticParams() {
@@ -89,6 +90,9 @@ export default async function OffreDetailPage({
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 pb-28 md:px-6 md:pb-8">
+      {/* État de candidature partagé par TOUS les CTA de la page (aside + barre
+          fixe mobile). Rend un Fragment : aucun élément DOM, layout inchangé. */}
+      <ApplyProvider offerId={offer.id} offerSlug={offer.slug}>
       {/* Fil d'Ariane */}
       <nav
         aria-label="Fil d'Ariane"
@@ -174,7 +178,7 @@ export default async function OffreDetailPage({
             </dl>
 
             <div className="space-y-3 pt-1">
-              <ApplyButton offerId={offer.id} offerSlug={offer.slug} className="w-full" />
+              <ApplyButton className="w-full" />
               <Link
                 href={APPLY_HREF}
                 className="flex w-full items-center justify-center gap-2 rounded-md border-2 border-primary px-4 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -234,13 +238,9 @@ export default async function OffreDetailPage({
         >
           <Heart aria-hidden className="h-5 w-5" />
         </Link>
-        <ApplyButton
-          offerId={offer.id}
-          offerSlug={offer.slug}
-          label="Postuler maintenant"
-          className="flex-1"
-        />
+        <ApplyButton label="Postuler maintenant" className="flex-1" />
       </div>
+      </ApplyProvider>
     </main>
   );
 }
