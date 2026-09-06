@@ -5,6 +5,7 @@ export type { NavItem } from "./sidebar-nav";
 export { BottomNavMobile } from "./bottom-nav";
 export { CandidateSidebar } from "./candidate-sidebar";
 export { RecruiterSidebar } from "./recruiter-sidebar";
+export { RecruiterBottomNav } from "./recruiter-bottom-nav";
 export { AdminSidebar } from "./admin-sidebar";
 export {
   candidateNavItems,

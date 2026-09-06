@@ -15,7 +15,7 @@ export function RecruiterSidebar() {
       footer={
         <Link
           href="/recruteur/offres/nouvelle"
-          className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+          className="flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
         >
           <FilePlus className="h-4 w-4" aria-hidden />
           Publier une offre

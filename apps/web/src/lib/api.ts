@@ -300,3 +300,133 @@ export async function createApplication(jobOfferId: string, message?: string): P
     body: JSON.stringify(message ? { jobOfferId, message } : { jobOfferId }),
   });
 }
+
+// ============================================================================
+// Espace recruteur (P0-5) — toutes ces routes sont authentifiées (cookie de
+// session) et le backend vérifie systématiquement la propriété de l'offre.
+// Le frontend n'envoie jamais recruiterId : il est dérivé de la session.
+// ============================================================================
+
+/** Champs éditables d'une offre — miroir de CreateJobOfferDto côté API. */
+export interface JobOfferInput {
+  title: string;
+  description: string;
+  metierSlug: string;
+  type: string;
+  city: string;
+  area?: string;
+  budgetMin?: number;
+  budgetMax?: number;
+  budgetLabel?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+/** Candidature vue par le recruteur (sélection sûre renvoyée par l'API). */
+export interface RecruiterApplication {
+  id: string;
+  candidateId: string;
+  jobOfferId: string;
+  cvId: string | null;
+  status: string;
+  message: string | null;
+  createdAt: string;
+  updatedAt: string;
+  candidate: {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    city: string;
+  };
+  jobOffer: {
+    id: string;
+    slug: string;
+    title: string;
+    status: string;
+    city: string;
+    metierSlug: string;
+    type: string;
+  };
+  cv: { id: string; source: string; fileName: string | null; title: string } | null;
+}
+
+/** GET /recruiter/job-offers — mes offres, tous statuts confondus. */
+export async function fetchMyOffers(): Promise<JobOfferApi[]> {
+  const res = await call("/recruiter/job-offers", { method: "GET", cache: "no-store" });
+  const data = (await res.json()) as { items: JobOfferApi[] };
+  return data.items;
+}
+
+/** GET /recruiter/job-offers/:id — une de mes offres (403 si elle ne m'appartient pas). */
+export async function fetchMyOffer(id: string): Promise<JobOfferApi> {
+  const res = await call(`/recruiter/job-offers/${encodeURIComponent(id)}`, {
+    method: "GET",
+    cache: "no-store",
+  });
+  const data = (await res.json()) as { offer: JobOfferApi };
+  return data.offer;
+}
+
+/** POST /job-offers — crée une offre (naît en brouillon ; réservé aux recruteurs). */
+export async function createOffer(input: JobOfferInput): Promise<JobOfferApi> {
+  const res = await call("/job-offers", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  const data = (await res.json()) as { offer: JobOfferApi };
+  return data.offer;
+}
+
+/** PATCH /job-offers/:id — modifie une offre (propriétaire uniquement). */
+export async function updateOffer(
+  id: string,
+  input: Partial<JobOfferInput>,
+): Promise<JobOfferApi> {
+  const res = await call(`/job-offers/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  const data = (await res.json()) as { offer: JobOfferApi };
+  return data.offer;
+}
+
+/** POST /job-offers/:id/publish — publie l'offre. */
+export async function publishOffer(id: string): Promise<JobOfferApi> {
+  const res = await call(`/job-offers/${encodeURIComponent(id)}/publish`, { method: "POST" });
+  const data = (await res.json()) as { offer: JobOfferApi };
+  return data.offer;
+}
+
+/** POST /job-offers/:id/close — ferme l'offre (elle n'accepte plus de candidatures). */
+export async function closeOffer(id: string): Promise<JobOfferApi> {
+  const res = await call(`/job-offers/${encodeURIComponent(id)}/close`, { method: "POST" });
+  const data = (await res.json()) as { offer: JobOfferApi };
+  return data.offer;
+}
+
+/** DELETE /job-offers/:id — supprime l'offre ET, en cascade DB, ses candidatures. */
+export async function deleteOffer(id: string): Promise<void> {
+  await call(`/job-offers/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+/** GET /recruiter/applications — candidatures reçues sur MES offres (option ?offerId). */
+export async function fetchRecruiterApplications(
+  offerId?: string,
+): Promise<RecruiterApplication[]> {
+  const qs = offerId ? `?offerId=${encodeURIComponent(offerId)}` : "";
+  const res = await call(`/recruiter/applications${qs}`, { method: "GET", cache: "no-store" });
+  const data = (await res.json()) as { applications: RecruiterApplication[] };
+  return data.applications;
+}
+
+/** GET /recruiter/applications/:id — détail d'une candidature reçue. */
+export async function fetchRecruiterApplication(id: string): Promise<RecruiterApplication> {
+  const res = await call(`/recruiter/applications/${encodeURIComponent(id)}`, {
+    method: "GET",
+    cache: "no-store",
+  });
+  const data = (await res.json()) as { application: RecruiterApplication };
+  return data.application;
+}
