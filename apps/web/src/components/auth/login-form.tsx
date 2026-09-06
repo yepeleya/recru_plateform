@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { loginWithCredentials } from "@/lib/api";
 import { safeInternalPath } from "@/lib/safe-redirect";
+import { useAuth } from "@/lib/auth/auth-context";
 
 const inputClass =
   "w-full rounded-lg border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-stone-400 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20";
@@ -13,6 +14,7 @@ const labelClass = "text-sm font-medium text-stone-700";
 
 export function LoginForm() {
   const router = useRouter();
+  const { refresh } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -25,6 +27,10 @@ export function LoginForm() {
     setLoading(true);
     try {
       await loginWithCredentials(email, password);
+      // Synchronise l'état d'authentification AVANT toute redirection : sans ça,
+      // useAuth().me reste périmé (null) et une page protégée atteinte en
+      // navigation client rebondirait vers /connexion (Bug #1).
+      await refresh();
       // Retour au contexte d'origine si `?next` est un chemin interne sûr
       // (ex. l'offre consultée avant d'être renvoyé vers la connexion).
       const next =
