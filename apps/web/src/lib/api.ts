@@ -307,17 +307,29 @@ export async function createApplication(jobOfferId: string, message?: string): P
 // Le frontend n'envoie jamais recruiterId : il est dérivé de la session.
 // ============================================================================
 
-/** Champs éditables d'une offre — miroir de CreateJobOfferDto côté API. */
+/**
+ * Champs éditables d'une offre — miroir de CreateJobOfferDto côté API.
+ *
+ * Les champs optionnels acceptent `null` : sur un PATCH, `null` traverse
+ * `@IsOptional()` et Prisma écrit bien NULL — c'est le seul moyen d'EFFACER une
+ * valeur déjà enregistrée (vérifié sur l'API réelle). Ne jamais envoyer "" pour
+ * effacer : le backend stockerait une chaîne vide.
+ *
+ * `startDate` / `endDate` n'acceptent volontairement PAS `null` : le service
+ * backend transforme `null` en `undefined` (`dto.startDate ? … : undefined`),
+ * donc une date enregistrée n'est PAS effaçable aujourd'hui. Le type interdit
+ * d'écrire un code qui prétendrait le contraire.
+ */
 export interface JobOfferInput {
   title: string;
   description: string;
   metierSlug: string;
   type: string;
   city: string;
-  area?: string;
-  budgetMin?: number;
-  budgetMax?: number;
-  budgetLabel?: string;
+  area?: string | null;
+  budgetMin?: number | null;
+  budgetMax?: number | null;
+  budgetLabel?: string | null;
   startDate?: string;
   endDate?: string;
 }
