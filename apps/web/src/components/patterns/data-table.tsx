@@ -21,6 +21,13 @@ interface DataTableProps<T> {
   loading?: boolean;
   empty?: ReactNode;
   className?: string;
+  /**
+   * Rendu mobile personnalisé d'une ligne. Optionnel : sans cette prop, le
+   * comportement historique (paires <dt>/<dd> génériques) est conservé à
+   * l'identique. Utile quand la présentation « libellé → valeur » ne convient
+   * pas (titre à mettre en avant, carte entièrement cliquable…).
+   */
+  renderMobileCard?: (row: T) => ReactNode;
 }
 
 function TableSkeleton({ columns, rows = 5 }: { columns: number; rows?: number }) {
@@ -44,6 +51,7 @@ export function DataTable<T>({
   loading = false,
   empty,
   className,
+  renderMobileCard,
 }: DataTableProps<T>) {
   if (loading) {
     return <TableSkeleton columns={columns.length} />;
@@ -91,20 +99,24 @@ export function DataTable<T>({
 
       {/* Mobile : cartes empilées */}
       <div className="flex flex-col gap-3 md:hidden">
-        {rows.map((row) => (
-          <div key={getRowKey(row)} className="rounded-lg border border-border bg-surface p-4">
-            <dl className="flex flex-col gap-2">
-              {columns.map((col) => (
-                <div key={col.key} className="flex items-start justify-between gap-3">
-                  <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {col.header}
-                  </dt>
-                  <dd className="min-w-0 text-right text-sm text-foreground">{col.cell(row)}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        ))}
+        {rows.map((row) =>
+          renderMobileCard ? (
+            <div key={getRowKey(row)}>{renderMobileCard(row)}</div>
+          ) : (
+            <div key={getRowKey(row)} className="rounded-lg border border-border bg-surface p-4">
+              <dl className="flex flex-col gap-2">
+                {columns.map((col) => (
+                  <div key={col.key} className="flex items-start justify-between gap-3">
+                    <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {col.header}
+                    </dt>
+                    <dd className="min-w-0 text-right text-sm text-foreground">{col.cell(row)}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          ),
+        )}
       </div>
     </div>
   );
