@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
@@ -21,12 +21,21 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         ExtractJwt.fromAuthHeaderAsBearerToken(),
       ]),
       ignoreExpiration: false,
-      secretOrKey: config.get<string>('JWT_SECRET') ?? 'change-me-in-production',
+      // Aucun secret de repli : sans JWT_SECRET, l'API refuse de démarrer.
+      secretOrKey: config.getOrThrow<string>('JWT_SECRET'),
       passReqToCallback: false,
     });
   }
 
   async validate(payload: JwtPayload) {
+    // Seul un jeton d'accès (typ 'a') ouvre une route protégée. Le jeton de
+    // rafraîchissement (typ 'r', 7 jours) est signé avec le même secret : sans ce
+    // contrôle il passerait ici et contournerait la durée courte de l'accès.
+    // Ce contrôle ne rend PAS la déconnexion immédiate : un jeton d'accès reste
+    // valide jusqu'à son expiration (15 min).
+    if (payload?.typ !== 'a') {
+      throw new UnauthorizedException();
+    }
     return { userId: payload.sub, email: payload.email, role: payload.role };
   }
 }
