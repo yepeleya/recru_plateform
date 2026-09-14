@@ -79,16 +79,26 @@ model User {
 // jamais le token en clair : une fuite de la base n'expose aucun token
 // réutilisable. `id` sert de `jti` dans le JWT refresh. Rotation à chaque
 // usage (l'ancien est marqué revoked), révocation au logout.
+//
+// Session de connexion : `sessionId` est commun à tous les refresh tokens issus
+// d'une même connexion — la rotation le conserve. L'access token le porte (`sid`)
+// et chaque requête authentifiée vérifie qu'un token non révoqué et non expiré
+// existe encore pour cette session. Le logout révoque toute la session ; la
+// suppression d'un compte supprime ses sessions (cascade).
 model RefreshToken {
   id        String    @id @default(uuid()) @db.Char(36)
   userId    String    @db.Char(36)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId String    @db.Char(36)
   tokenHash String    @db.VarChar(64) // sha256 hex = 64
   expiresAt DateTime
   revokedAt DateTime?
   createdAt DateTime  @default(now())
 
   @@index([userId])
+  // Vérification de session à chaque requête : sessionId + revokedAt IS NULL
+  // atteint directement le token actif, sans parcourir l'historique de rotation.
+  @@index([sessionId, revokedAt])
   @@map("refresh_tokens")
 }
 

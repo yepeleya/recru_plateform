@@ -27,10 +27,23 @@ interface RefreshPayload {
   jti: string;
 }
 
+interface AccessPayload {
+  sub: string;
+  typ: string;
+  sid?: string;
+}
+
+interface SessionRef {
+  sessionId: string;
+  userId: string;
+}
+
 // Types de pièce nécessitant un recto ET un verso (permis, CNI physique).
 const DOCUMENT_TYPES_REQUIRING_BACK = new Set(['cni', 'permis-conduire']);
 
 const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+const SESSION_EXPIRED = 'Session expirée, veuillez vous reconnecter.';
 
 function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
@@ -93,7 +106,7 @@ export class AuthService {
       },
     });
 
-    return this.issueTokens(user.id, user.email, user.role);
+    return this.openSession(user.id, user.email, user.role);
   }
 
   async login(dto: LoginDto): Promise<TokenPair> {
@@ -107,17 +120,17 @@ export class AuthService {
       throw new UnauthorizedException('Identifiants invalides.');
     }
 
-    return this.issueTokens(user.id, user.email, user.role);
+    return this.openSession(user.id, user.email, user.role);
   }
 
+  // Rotation : le refresh token présenté est révoqué et remplacé par un nouveau,
+  // dans la MÊME session. Aucune nouvelle session n'est créée.
   async refreshTokens(rawToken: string): Promise<TokenPair> {
     let payload: RefreshPayload;
     try {
-      payload = this.jwtService.verify(rawToken, {
-        secret: this.config.get<string>('JWT_SECRET'),
-      }) as RefreshPayload;
+      payload = this.jwtService.verify<RefreshPayload>(rawToken, { secret: this.jwtSecret() });
     } catch {
-      throw new UnauthorizedException('Session expirée, veuillez vous reconnecter.');
+      throw new UnauthorizedException(SESSION_EXPIRED);
     }
 
     if (payload.typ !== 'r' || !payload.jti) {
@@ -125,55 +138,129 @@ export class AuthService {
     }
 
     const stored = await this.prisma.refreshToken.findUnique({ where: { id: payload.jti } });
-    // Le token doit exister, ne pas être révoqué, ne pas être expiré, et son
-    // hash doit correspondre exactement au token présenté (défense en profondeur
-    // contre un jti forgé ou un token de la base réutilisé après fuite).
+    // Le token doit exister, appartenir au compte du jeton, ne pas être révoqué,
+    // ne pas être expiré, et son hash doit correspondre exactement au token
+    // présenté (défense en profondeur contre un jti forgé ou un token de la base
+    // réutilisé après fuite).
     if (
       !stored ||
+      stored.userId !== payload.sub ||
       stored.revokedAt ||
       stored.expiresAt.getTime() < Date.now() ||
       stored.tokenHash !== hashToken(rawToken)
     ) {
-      throw new UnauthorizedException('Session expirée, veuillez vous reconnecter.');
+      throw new UnauthorizedException(SESSION_EXPIRED);
     }
 
-    const user = await this.usersService.findByEmail(payload.email);
-    if (!user || user.id !== payload.sub) {
-      throw new UnauthorizedException('Session expirée, veuillez vous reconnecter.');
+    const user = await this.prisma.user.findUnique({
+      where: { id: stored.userId },
+      select: { id: true, email: true, role: true },
+    });
+    if (!user) {
+      throw new UnauthorizedException(SESSION_EXPIRED);
     }
 
-    // Rotation : l'ancien refresh token est révoqué, un nouveau est émis. Un
-    // token déjà utilisé ne peut donc pas être rejoué.
-    await this.prisma.refreshToken.update({
-      where: { id: stored.id },
-      data: { revokedAt: new Date() },
+    const signed = this.signTokens(user.id, user.email, user.role, stored.sessionId);
+
+    // Révocation conditionnelle + émission dans une seule transaction :
+    //  - deux rafraîchissements simultanés du même token : un seul obtient count = 1 ;
+    //  - la session n'est jamais observée sans token actif entre les deux écritures.
+    await this.prisma.$transaction(async (tx) => {
+      const { count } = await tx.refreshToken.updateMany({
+        where: { id: stored.id, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+      if (count !== 1) {
+        throw new UnauthorizedException(SESSION_EXPIRED);
+      }
+      await tx.refreshToken.create({
+        data: {
+          id: signed.jti,
+          userId: user.id,
+          sessionId: stored.sessionId,
+          tokenHash: hashToken(signed.refreshToken),
+          expiresAt: new Date(Date.now() + REFRESH_TTL_MS),
+        },
+      });
     });
 
-    return this.issueTokens(user.id, user.email, user.role);
+    return { accessToken: signed.accessToken, refreshToken: signed.refreshToken };
   }
 
-  // Révoque le refresh token présenté (logout). Best-effort : un token déjà
-  // invalide ne doit pas faire échouer la déconnexion côté client.
-  async revokeRefreshToken(rawToken: string | undefined): Promise<void> {
-    if (!rawToken) return;
-    try {
-      const payload = this.jwtService.verify(rawToken, {
-        secret: this.config.get<string>('JWT_SECRET'),
-      }) as RefreshPayload;
-      if (payload.jti) {
-        await this.prisma.refreshToken.updateMany({
-          where: { id: payload.jti, revokedAt: null },
-          data: { revokedAt: new Date() },
-        });
-      }
-    } catch {
-      // Token illisible/expiré : rien à révoquer, on ignore silencieusement.
+  // Logout : révoque TOUTE la session (tous ses refresh tokens, rotations
+  // comprises), pas un token isolé. Les access tokens de la session deviennent
+  // inutilisables immédiatement, puisque chaque requête vérifie la session.
+  //
+  // La session est identifiée par le jeton d'accès (`sid`) — c'est le seul que le
+  // navigateur envoie sur /auth/logout, le cookie de refresh étant limité à
+  // /auth/refresh — ou, à défaut, par le refresh token. Expiration ignorée pour
+  // cette seule identification : révoquer une session n'ouvre aucun accès.
+  // Best-effort : un jeton illisible ne fait pas échouer la déconnexion.
+  async revokeSession(tokens: { accessToken?: string; refreshToken?: string }): Promise<void> {
+    const refs = [this.sessionFromAccess(tokens.accessToken), await this.sessionFromRefresh(tokens.refreshToken)];
+    const seen = new Set<string>();
+    for (const ref of refs) {
+      if (!ref || seen.has(ref.sessionId)) continue;
+      seen.add(ref.sessionId);
+      await this.prisma.refreshToken.updateMany({
+        where: { sessionId: ref.sessionId, userId: ref.userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
     }
   }
 
-  private async issueTokens(userId: string, email: string, role: string): Promise<TokenPair> {
+  private sessionFromAccess(token: string | undefined): SessionRef | null {
+    if (!token) return null;
+    try {
+      const payload = this.jwtService.verify<AccessPayload>(token, {
+        secret: this.jwtSecret(),
+        ignoreExpiration: true,
+      });
+      return payload.typ === 'a' && payload.sid && payload.sub
+        ? { sessionId: payload.sid, userId: payload.sub }
+        : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private async sessionFromRefresh(token: string | undefined): Promise<SessionRef | null> {
+    if (!token) return null;
+    try {
+      const payload = this.jwtService.verify<RefreshPayload>(token, {
+        secret: this.jwtSecret(),
+        ignoreExpiration: true,
+      });
+      if (payload.typ !== 'r' || !payload.jti) return null;
+      const row = await this.prisma.refreshToken.findUnique({
+        where: { id: payload.jti },
+        select: { sessionId: true, userId: true },
+      });
+      return row && row.userId === payload.sub ? row : null;
+    } catch {
+      return null;
+    }
+  }
+
+  // Nouvelle connexion (login, inscription) = nouvelle session.
+  private async openSession(userId: string, email: string, role: string): Promise<TokenPair> {
+    const sessionId = randomUUID();
+    const signed = this.signTokens(userId, email, role, sessionId);
+    await this.prisma.refreshToken.create({
+      data: {
+        id: signed.jti,
+        userId,
+        sessionId,
+        tokenHash: hashToken(signed.refreshToken),
+        expiresAt: new Date(Date.now() + REFRESH_TTL_MS),
+      },
+    });
+    return { accessToken: signed.accessToken, refreshToken: signed.refreshToken };
+  }
+
+  private signTokens(userId: string, email: string, role: string, sessionId: string) {
     const accessToken = this.jwtService.sign(
-      { sub: userId, email, role, typ: 'a' },
+      { sub: userId, email, role, typ: 'a', sid: sessionId },
       { expiresIn: '15m' },
     );
 
@@ -184,15 +271,10 @@ export class AuthService {
       { expiresIn: '7d' },
     );
 
-    await this.prisma.refreshToken.create({
-      data: {
-        id: jti,
-        userId,
-        tokenHash: hashToken(refreshToken),
-        expiresAt: new Date(Date.now() + REFRESH_TTL_MS),
-      },
-    });
+    return { jti, accessToken, refreshToken };
+  }
 
-    return { accessToken, refreshToken };
+  private jwtSecret(): string {
+    return this.config.getOrThrow<string>('JWT_SECRET');
   }
 }

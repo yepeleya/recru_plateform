@@ -81,10 +81,17 @@ export class AuthController {
     }
   }
 
+  // Révoque la session entière. Le navigateur n'envoie pas le cookie de refresh
+  // ici (limité à REFRESH_PATH) : la session est identifiée par le jeton d'accès.
   @Post('logout')
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const token = (req.cookies as Record<string, string> | undefined)?.[COOKIE_REFRESH];
-    await this.authService.revokeRefreshToken(token);
+    const cookies = req.cookies as Record<string, string> | undefined;
+    const authorization = req.headers.authorization;
+    const bearer = authorization?.startsWith('Bearer ') ? authorization.slice(7) : undefined;
+    await this.authService.revokeSession({
+      accessToken: cookies?.[COOKIE_ACCESS] ?? bearer,
+      refreshToken: cookies?.[COOKIE_REFRESH],
+    });
     this.clearCookies(res);
     return { ok: true };
   }
