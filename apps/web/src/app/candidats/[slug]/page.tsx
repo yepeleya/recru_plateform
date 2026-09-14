@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import {
   Mail,
   Bookmark,
@@ -11,13 +12,11 @@ import {
   FileText,
   Eye,
   Download,
-  UserSearch,
 } from "lucide-react";
 import { getMetierBySlug } from "@bara/shared-types";
 import { getMetierIcon } from "@/lib/metier-icons";
 import { jobTypeLabel } from "@/lib/offer-format";
 import { getWorkerProfiles, getWorkerProfileBySlug } from "@/lib/data";
-import { EmptyState } from "@/components/patterns";
 
 export async function generateStaticParams() {
   const profiles = await getWorkerProfiles();
@@ -31,11 +30,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const profile = await getWorkerProfileBySlug(slug);
-  if (!profile) return { title: "Profil introuvable" };
+  if (!profile) return { title: "Profil introuvable", robots: { index: false, follow: false } };
   return {
     title: profile.headline,
     description: profile.bio?.slice(0, 155) ?? profile.headline,
-    // noindex tant que les données sont des exemples (FRONT-1).
     robots: { index: false, follow: true },
     alternates: { canonical: `/candidats/${profile.slug}` },
   };
@@ -51,25 +49,8 @@ export default async function CandidatDetailPage({
   const { slug } = await params;
   const profile = await getWorkerProfileBySlug(slug);
 
-  if (!profile) {
-    return (
-      <main className="mx-auto max-w-7xl px-4 py-16 md:px-6">
-        <EmptyState
-          icon={UserSearch}
-          title="Profil introuvable"
-          description="Ce profil n'existe pas ou n'est plus disponible."
-          action={
-            <Link
-              href="/candidats"
-              className="rounded-md bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            >
-              Voir tous les candidats
-            </Link>
-          }
-        />
-      </main>
-    );
-  }
+  // Profil inexistant : vraie 404, pas une page 200 « introuvable ».
+  if (!profile) notFound();
 
   const metier = getMetierBySlug(profile.metierSlug);
   const MetierIcon = getMetierIcon(profile.metierSlug);

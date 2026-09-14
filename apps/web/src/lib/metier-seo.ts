@@ -8,7 +8,7 @@ import type { Metier } from "@bara/shared-types";
 export function buildMetierTitle(metier: Pick<Metier, "label">): string {
   const { label } = metier;
   if (label.length <= 12) {
-    return `${label} : trouver un profil ou publier une offre`;
+    return `${label} : trouver un job ou publier une offre`;
   }
   if (label.length <= 22) {
     return `${label} : trouver ou publier une offre`;
@@ -17,5 +17,5 @@ export function buildMetierTitle(metier: Pick<Metier, "label">): string {
 }
 
 export function buildMetierDescription(metier: Pick<Metier, "label" | "blurb">): string {
-  return `${metier.label} sur Bara : ${metier.blurb} Publie ton profil ou ton offre en Côte d'Ivoire.`;
+  return `${metier.label} sur Bara : ${metier.blurb} Postule ou publie ton offre en Côte d'Ivoire.`;
 }

@@ -1,7 +1,6 @@
-// Façade d'accès aux données (FRONT-1 = mocks ; FRONT-2 = API NestJS).
-// Les pages et composants importent UNIQUEMENT depuis ici, jamais depuis
-// lib/mock directement. Ainsi le branchement API en FRONT-2 ne touche que cette
-// couche, sans réécrire les pages.
+// Façade d'accès aux données. Les pages et composants importent UNIQUEMENT
+// depuis ici. Offres : API NestJS. Profils : aucune API avant la phase 4, donc
+// aucune donnée — jamais de données fictives (V22).
 export type { DataState } from "./types";
 export { getOffers, getOfferBySlug, getFeaturedOffers } from "./offers";
 export type { OfferFilters } from "./offers";

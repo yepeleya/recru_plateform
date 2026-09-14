@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_NAME}`,
   },
   description:
-    "Bara met en relation ceux qui cherchent un petit job et ceux qui recrutent en Côte d'Ivoire. Créez votre CV, publiez votre profil, trouvez votre bara.",
+    "Bara met en relation ceux qui cherchent un petit job et ceux qui recrutent en Côte d'Ivoire. Créez votre CV, postulez ou publiez vos offres.",
   openGraph: {
     type: "website",
     siteName: SITE_NAME,

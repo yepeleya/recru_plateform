@@ -1,20 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { UserPlus, Megaphone, MessageCircle, ClipboardList, Search, Handshake, ArrowRight } from "lucide-react";
+import { UserPlus, Search, ClipboardList, Inbox, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Comment trouver un petit job rapidement en Côte d'Ivoire",
+  title: "Comment trouver un petit job en Côte d'Ivoire avec Bara",
   description:
-    "Découvrez comment trouver un petit job rapidement avec Bara : créez votre CV, publiez votre profil et répondez aux offres près de chez vous à Abidjan.",
+    "Découvrez comment fonctionne Bara : créez votre CV et postulez aux offres de petits jobs près de chez vous à Abidjan.",
   alternates: { canonical: "/comment-ca-marche" },
   openGraph: {
-    title: "Comment trouver un petit job rapidement en Côte d'Ivoire",
+    title: "Comment trouver un petit job en Côte d'Ivoire avec Bara",
     description:
-      "Créez votre CV, publiez votre profil et répondez aux offres près de chez vous : le fonctionnement de Bara expliqué pas à pas.",
+      "Créez votre CV et postulez aux offres près de chez vous : le fonctionnement de Bara expliqué pas à pas.",
     url: "/comment-ca-marche",
   },
 };
 
+// Chaque étape décrit ce que Bara permet réellement aujourd'hui (V22) : ni
+// profil public, ni messagerie tant qu'ils n'existent pas.
 const CANDIDATE_STEPS = [
   {
     icon: UserPlus,
@@ -22,14 +24,9 @@ const CANDIDATE_STEPS = [
     text: "Le générateur de CV intégré te guide section par section : expériences, formation, compétences, langues. Aucun logiciel à installer.",
   },
   {
-    icon: Megaphone,
-    title: "Publie ton profil",
-    text: "Choisis ton métier, ta ville et tes disponibilités. Ton profil devient visible dans la base de candidats consultée par les recruteurs.",
-  },
-  {
-    icon: MessageCircle,
-    title: "Réponds aux offres ou laisse-toi contacter",
-    text: "Les recruteurs publient des missions avec le budget et la période. Tu peux postuler, ou être contacté directement en privé.",
+    icon: Search,
+    title: "Postule aux offres",
+    text: "Les recruteurs publient des missions, avec le budget et la période quand ils les précisent. Tu postules avec ton CV.",
   },
 ] as const;
 
@@ -40,14 +37,9 @@ const RECRUITER_STEPS = [
     text: "Décris la mission, ce que tu es prêt à payer et la période. C'est gratuit au lancement.",
   },
   {
-    icon: Search,
-    title: "Ou parcours les profils",
-    text: "Filtre par métier et par ville, consulte les CV, et contacte directement les candidats qui t'intéressent.",
-  },
-  {
-    icon: Handshake,
-    title: "Mets-toi d'accord et travaillez",
-    text: "L'échange se fait en direct : messagerie, appel, rencontre. Bara fait la mise en relation, vous faites le reste.",
+    icon: Inbox,
+    title: "Reçois des candidatures",
+    text: "Les candidats intéressés postulent à ton offre avec leur CV.",
   },
 ] as const;
 
@@ -61,14 +53,14 @@ export default function CommentCaMarchePage() {
         />
         <div className="relative mx-auto max-w-3xl px-4 py-20">
           <h1 className="animate-fade-up font-display text-4xl font-bold leading-tight text-white sm:text-5xl">
-            Comment trouver un petit job rapidement avec Bara
+            Comment trouver un petit job avec Bara
           </h1>
           <p className="animate-fade-up anim-delay-1 mt-6 text-lg leading-relaxed text-stone-300">
             Bara fonctionne comme un pont entre deux mondes : d&apos;un côté,
             des personnes prêtes à travailler — freelances, étudiants,
             artisans, personnel de maison — et de l&apos;autre, des
             entreprises et des particuliers qui ont besoin de
-            main-d&apos;œuvre, tout de suite.
+            main-d&apos;œuvre.
           </p>
         </div>
       </section>
@@ -167,7 +159,8 @@ export default function CommentCaMarchePage() {
             Prêt à commencer ?
           </h2>
           <p className="mt-2 text-white/90">
-            La première étape, c&apos;est ton CV. Il te suit partout sur Bara.
+            La première étape, c&apos;est ton CV : il accompagne chacune de tes
+            candidatures.
           </p>
           <Link
             href="/creer-un-cv"

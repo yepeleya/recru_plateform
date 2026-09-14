@@ -36,7 +36,7 @@ export default function JobsVacancesPage() {
             Étudiant, élève, jeune diplômé : les vacances sont le bon moment
             pour gagner ton argent et ajouter une vraie expérience à ton CV.
             Les supermarchés, boutiques et restaurants recrutent des renforts
-            — Bara te met en relation directement.
+            — sur Bara, tu postules directement à leurs offres.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <Link
@@ -79,12 +79,8 @@ export default function JobsVacancesPage() {
             études, tes compétences et ta motivation comptent.
           </li>
           <li>
-            <strong>Publie ton profil</strong> en précisant que tu cherches un
-            job saisonnier et tes disponibilités.
-          </li>
-          <li>
             <strong>Postule aux offres</strong> marquées « Saisonnier /
-            vacances » ou laisse les recruteurs venir à toi.
+            vacances ».
           </li>
         </ol>
       </section>

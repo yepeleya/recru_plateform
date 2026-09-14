@@ -12,7 +12,6 @@ const STATIC_ROUTES: Array<{
 }> = [
   { path: "/", changeFrequency: "daily", priority: 1 },
   { path: "/offres", changeFrequency: "daily", priority: 0.9 },
-  { path: "/profils", changeFrequency: "daily", priority: 0.9 },
   { path: "/comment-ca-marche", changeFrequency: "monthly", priority: 0.8 },
   { path: "/creer-un-cv", changeFrequency: "monthly", priority: 0.9 },
   { path: "/metiers", changeFrequency: "weekly", priority: 0.8 },

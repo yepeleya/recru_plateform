@@ -5,12 +5,12 @@ import { UserRound, Briefcase, Star, Sparkles, ArrowRight } from "lucide-react";
 export const metadata: Metadata = {
   title: "Créer un CV en ligne gratuit et professionnel",
   description:
-    "Créez un CV en ligne gratuit en quelques minutes avec Bara : modèles professionnels, formulaire guidé et publication directe de votre profil candidat.",
+    "Créez un CV en ligne gratuit avec Bara : modèles professionnels et formulaire guidé, pour postuler aux offres.",
   alternates: { canonical: "/creer-un-cv" },
   openGraph: {
     title: "Créer un CV en ligne gratuit et professionnel",
     description:
-      "Modèles professionnels, formulaire guidé et publication directe de votre profil candidat : créez votre CV en quelques minutes.",
+      "Modèles professionnels et formulaire guidé : créez votre CV pour postuler aux offres sur Bara.",
     url: "/creer-un-cv",
   },
 };
@@ -48,8 +48,7 @@ export default function CreerUnCvPage() {
           <p className="animate-fade-up anim-delay-1 mt-6 text-lg leading-relaxed text-stone-300">
             Pas un simple formulaire à remplir : un vrai générateur de CV. Tu
             renseignes tes informations une seule fois, tu choisis un modèle
-            professionnel, et ton CV est prêt à être publié sur ton profil
-            Bara ou téléchargé pour tes candidatures.
+            professionnel, et ton CV est prêt pour tes candidatures.
           </p>
         </div>
       </section>

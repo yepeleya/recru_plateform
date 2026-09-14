@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Mail, MessageCircle, Building2 } from "lucide-react";
+import { Mail, Building2 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Contacter l'équipe Bara : email et réseaux sociaux",
+  title: "Contacter l'équipe Bara par email",
   description:
-    "Une question, un partenariat, un problème sur la plateforme ? Contactez l'équipe Bara par email ou sur les réseaux sociaux — on vous répond rapidement.",
+    "Une question, un partenariat, un problème sur la plateforme ? Contactez l'équipe Bara par email.",
   alternates: { canonical: "/contact" },
   openGraph: {
-    title: "Contacter l'équipe Bara : email et réseaux sociaux",
+    title: "Contacter l'équipe Bara par email",
     description:
       "Une question, un partenariat, un problème sur la plateforme ? Contactez l'équipe Bara.",
     url: "/contact",
@@ -25,10 +25,10 @@ export default function ContactPage() {
       </h1>
       <p className="mt-5 max-w-2xl text-lg leading-relaxed text-stone-700">
         Une question sur la plateforme, une idée, un problème avec ton compte
-        ou une proposition de partenariat ? Écris-nous, on répond vite.
+        ou une proposition de partenariat ? Écris-nous.
       </p>
 
-      <div className="mt-12 grid gap-6 sm:grid-cols-3">
+      <div className="mt-12 grid gap-6 sm:grid-cols-2">
         <article className="card-lift rounded-2xl border border-stone-200 bg-white p-6">
           <Mail aria-hidden className="h-7 w-7 text-brand" />
           <h2 className="mt-3 text-lg font-semibold">Par email</h2>
@@ -55,15 +55,6 @@ export default function ContactPage() {
           >
             Proposer un partenariat
           </a>
-        </article>
-
-        <article className="card-lift rounded-2xl border border-stone-200 bg-white p-6">
-          <MessageCircle aria-hidden className="h-7 w-7 text-emerald-600" />
-          <h2 className="mt-3 text-lg font-semibold">Réseaux sociaux</h2>
-          <p className="mt-1 text-sm leading-relaxed text-stone-600">
-            Suis le lancement et écris-nous en DM — les liens arrivent très
-            bientôt.
-          </p>
         </article>
       </div>
 

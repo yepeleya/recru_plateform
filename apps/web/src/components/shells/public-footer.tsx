@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { QrCode, Share2, Link2, Mail, Phone, MapPin } from "lucide-react";
+import { Mail, MapPin } from "lucide-react";
 import { SITE_NAME } from "@/lib/site";
 
 // Pied de page public — style de la maquette Stitch (accueil) : fond clair
-// bleuté, 4 colonnes (marque + réseaux, Navigation, Support & Légal, Contact),
-// puis barre inférieure. Tokens Bara, icônes Lucide.
+// bleuté, 4 colonnes (marque, Navigation, Support & Légal, Contact), puis barre
+// inférieure. Tokens Bara, icônes Lucide. Aucun lien factice ni coordonnée
+// inventée (V22).
 
 const NAVIGATION = [
   { href: "/a-propos", label: "À propos" },
@@ -15,7 +16,7 @@ const NAVIGATION = [
 
 const SUPPORT = [
   { href: "/tarifs", label: "Tarifs" },
-  { href: "/contact", label: "Aide / FAQ" },
+  { href: "/contact", label: "Contact" },
   { href: "/conditions", label: "Conditions d'utilisation" },
   { href: "/confidentialite", label: "Confidentialité" },
 ] as const;
@@ -24,26 +25,14 @@ export function PublicFooter() {
   return (
     <footer className="mt-auto border-t border-border bg-primary-soft">
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-4 py-14 md:grid-cols-4">
-        {/* Marque + réseaux */}
+        {/* Marque */}
         <div className="col-span-2 space-y-4 md:col-span-1">
           <p className="font-display text-xl font-bold text-foreground">
             {SITE_NAME}
           </p>
           <p className="max-w-xs text-sm text-muted-foreground">
-            La plateforme de référence pour le travail temporaire et les missions
-            rapides en Côte d'Ivoire.
+            Petits jobs et missions en Côte d'Ivoire.
           </p>
-          <div className="flex gap-3">
-            <a href="#" aria-label="QR code" className="text-muted-foreground transition-colors hover:text-primary">
-              <QrCode className="h-5 w-5" />
-            </a>
-            <a href="#" aria-label="Partager" className="text-muted-foreground transition-colors hover:text-primary">
-              <Share2 className="h-5 w-5" />
-            </a>
-            <a href="#" aria-label="Lien" className="text-muted-foreground transition-colors hover:text-primary">
-              <Link2 className="h-5 w-5" />
-            </a>
-          </div>
         </div>
 
         {/* Navigation */}
@@ -80,9 +69,6 @@ export function PublicFooter() {
           <ul className="space-y-2.5 text-sm text-muted-foreground">
             <li className="flex items-center gap-2">
               <Mail className="h-4 w-4 shrink-0" aria-hidden /> contact@bara.ci
-            </li>
-            <li className="flex items-center gap-2">
-              <Phone className="h-4 w-4 shrink-0" aria-hidden /> +225 07 00 00 00 00
             </li>
             <li className="flex items-start gap-2">
               <MapPin className="h-4 w-4 shrink-0" aria-hidden /> Abidjan, Plateau

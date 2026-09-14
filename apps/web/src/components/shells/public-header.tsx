@@ -13,7 +13,7 @@ import { SITE_NAME } from "@/lib/site";
 
 const NAV_LINKS = [
   { href: "/offres", label: "Offres" },
-  { href: "/profils", label: "Profils" },
+  { href: "/candidats", label: "Profils" },
   { href: "/metiers", label: "Métiers" },
   { href: "/comment-ca-marche", label: "Comment ça marche" },
 ] as const;

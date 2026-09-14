@@ -6,69 +6,51 @@ import {
   Briefcase,
   ArrowRight,
   Sparkles,
-  BadgeCheck,
-  ShieldCheck,
-  Fingerprint,
-  Info,
-  MessageSquare,
   UserPlus,
-  Phone,
   FilePlus,
   Users,
-  CheckCircle2,
   Check,
   type LucideIcon,
 } from "lucide-react";
 import { METIERS } from "@bara/shared-types";
 import { getMetierIcon } from "@/lib/metier-icons";
-import { getFeaturedOffers, getWorkerProfiles } from "@/lib/data";
+import { getFeaturedOffers } from "@/lib/data";
 import { buttonVariants, cn } from "@/components/ui";
-import { JobCard, CandidateCard, FilterChip } from "@/components/patterns";
+import { JobCard, FilterChip } from "@/components/patterns";
 
 export const metadata: Metadata = {
   title: "Petits jobs en Côte d'Ivoire : trouver ou recruter | Bara",
   description:
-    "Trouvez un petit job, un gombo ou un prestataire en quelques minutes à Abidjan. Offres, profils et CV créés directement sur Bara. Gratuit au lancement.",
+    "Trouvez un petit job, un gombo ou publiez une offre en Côte d'Ivoire. Offres et CV sur Bara. Gratuit au lancement.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Petits jobs en Côte d'Ivoire : trouver ou recruter | Bara",
     description:
-      "Trouvez un petit job, un gombo ou un prestataire en quelques minutes à Abidjan. Offres, profils et CV créés directement sur Bara.",
+      "Trouvez un petit job, un gombo ou publiez une offre en Côte d'Ivoire. Offres et CV sur Bara.",
     url: "/",
   },
 };
 
-const TRUST = [
-  { icon: ShieldCheck, title: "Profils vérifiés", text: "Chaque profil est soumis à une vérification avant d'être visible sur la plateforme." },
-  { icon: Fingerprint, title: "Identité contrôlée", text: "Une pièce d'identité valide (CNI, passeport) est demandée à l'inscription." },
-  { icon: Info, title: "Informations claires", text: "Tarifs, horaires et missions sont définis explicitement dès le départ." },
-  { icon: MessageSquare, title: "Mise en relation directe", text: "Discutez et accordez-vous en direct avec les recruteurs ou les candidats." },
-] as const;
-
+// Accueil honnête (V22) : chaque étape décrit une capacité réellement disponible
+// aujourd'hui. Aucun chiffre, profil, badge ni promesse de sécurité non démontrés.
+// La section « profils disponibles » reviendra en phase 4, avec de vrais profils.
 const CANDIDATE_STEPS = [
-  { icon: UserPlus, title: "Créez votre profil", text: "Complétez vos infos, vos expériences et votre pièce d'identité." },
-  { icon: Search, title: "Trouvez une mission", text: "Parcourez les offres autour de vous et postulez en un clic." },
-  { icon: Phone, title: "Contactez le recruteur", text: "Discutez des détails et démarrez la mission." },
+  { icon: UserPlus, title: "Créez votre compte", text: "Inscrivez-vous avec votre pièce d'identité." },
+  { icon: Search, title: "Postulez aux offres", text: "Parcourez les offres publiées et postulez avec votre CV." },
 ] as const;
 
 const RECRUITER_STEPS = [
   { icon: FilePlus, title: "Publiez votre besoin", text: "Détaillez la mission, le lieu et la rémunération proposée." },
-  { icon: Users, title: "Trouvez un candidat", text: "Recevez des candidatures ou contactez directement les profils." },
-  { icon: CheckCircle2, title: "Concluez", text: "Validez les compétences et fixez le rendez-vous de la mission." },
+  { icon: Users, title: "Recevez des candidatures", text: "Les candidats intéressés postulent à votre offre avec leur CV." },
 ] as const;
 
 const CV_BULLETS = [
   "Modèles modernes et élégants",
   "Téléchargement PDF gratuit",
-  "Optimisé pour les recruteurs Bara",
 ] as const;
 
 export default async function HomePage() {
-  const [featuredOffers, availableProfiles] = await Promise.all([
-    getFeaturedOffers(3),
-    getWorkerProfiles({ availableNow: true }),
-  ]);
-  const featuredProfiles = availableProfiles.slice(0, 4);
+  const featuredOffers = await getFeaturedOffers(3);
   const popularMetiers = METIERS.slice(0, 12);
 
   return (
@@ -91,7 +73,7 @@ export default async function HomePage() {
             <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
               Bara met en relation les personnes qui cherchent des petits jobs,
               missions ponctuelles et emplois saisonniers avec ceux qui
-              recrutent. Simple, rapide et sécurisé.
+              recrutent.
             </p>
 
             {/* Barre de recherche — navigue vers /offres (câblage fin en FRONT-2) */}
@@ -134,15 +116,15 @@ export default async function HomePage() {
                 Trouver un job
               </Link>
               <Link
-                href="/candidats"
+                href="/recruteurs"
                 className="inline-flex h-11 items-center justify-center rounded-md bg-accent-soft px-6 text-sm font-semibold text-accent transition-colors hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
-                Trouver un candidat
+                Publier une offre
               </Link>
             </div>
           </div>
 
-          {/* Visuel incliné + carte flottante (placeholder CSP-safe, vrai asset en FRONT-2) */}
+          {/* Visuel incliné (placeholder décoratif CSP-safe, vrai asset en FRONT-2) */}
           <div className="relative hidden lg:block">
             <div
               aria-hidden
@@ -152,15 +134,6 @@ export default async function HomePage() {
               aria-hidden
               className="relative aspect-[4/5] rotate-2 rounded-2xl border-4 border-surface bg-gradient-to-br from-primary via-primary-hover to-accent shadow-2xl transition-transform duration-500 hover:rotate-0"
             />
-            <div className="absolute -bottom-6 -left-6 flex items-center gap-3 rounded-lg border border-border bg-surface p-4 shadow-xl">
-              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-success-soft text-success">
-                <BadgeCheck className="h-6 w-6" aria-hidden />
-              </span>
-              <div>
-                <p className="text-sm font-bold text-foreground">+5000 candidats</p>
-                <p className="text-xs text-muted-foreground">vérifiés ce mois</p>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -171,7 +144,7 @@ export default async function HomePage() {
           <div className="mb-6 flex items-end justify-between gap-4">
             <div>
               <h2 className="font-display text-2xl font-bold text-foreground">Parcourir par métier</h2>
-              <p className="text-sm text-muted-foreground">Les opportunités les plus demandées</p>
+              <p className="text-sm text-muted-foreground">Les métiers proposés sur Bara</p>
             </div>
             <Link
               href="/metiers"
@@ -211,64 +184,6 @@ export default async function HomePage() {
         </section>
       ) : null}
 
-      {/* --------------------------------------------- CANDIDATS DISPONIBLES */}
-      {featuredProfiles.length > 0 ? (
-        <section className="bg-background">
-          <div className="mx-auto max-w-7xl px-4 py-16">
-            <div className="mb-6 flex items-center justify-between gap-4">
-              <h2 className="font-display text-2xl font-bold text-foreground">Candidats disponibles</h2>
-              <Link href="/candidats" className="text-sm font-semibold text-primary hover:underline">
-                Trouver un candidat
-              </Link>
-            </div>
-            <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-              {featuredProfiles.map((profile) => (
-                <li key={profile.id}>
-                  <CandidateCard profile={profile} />
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-      ) : null}
-
-      {/* -------------------------------------------------------- CONFIANCE */}
-      <section className="bg-primary-soft">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 lg:grid-cols-2">
-          <div>
-            <h2 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
-              Pourquoi faire confiance à Bara ?
-            </h2>
-            <p className="mt-3 text-muted-foreground">
-              Nous sécurisons chaque étape de la mise en relation pour garantir
-              votre sérénité.
-            </p>
-            <ul className="mt-8 space-y-5">
-              {TRUST.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <li key={item.title} className="flex gap-4">
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-surface text-primary shadow-sm">
-                      <Icon className="h-6 w-6" aria-hidden />
-                    </span>
-                    <div>
-                      <h3 className="font-semibold text-foreground">{item.title}</h3>
-                      <p className="mt-1 text-sm text-muted-foreground">{item.text}</p>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-          {/* Visuel de confiance (placeholder décoratif) */}
-          <div aria-hidden className="hidden lg:block">
-            <div className="flex aspect-square items-center justify-center rounded-3xl bg-gradient-to-br from-primary via-primary-hover to-accent shadow-xl">
-              <ShieldCheck className="h-32 w-32 text-primary-foreground/90" />
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ------------------------------------------------ COMMENT ÇA MARCHE */}
       <section className="bg-background">
         <div className="mx-auto max-w-7xl px-4 py-16">
@@ -291,8 +206,8 @@ export default async function HomePage() {
               Créez votre CV directement sur Bara
             </h2>
             <p className="text-primary-foreground/90">
-              Pas besoin d'ordinateur ni de logiciel : un CV professionnel prêt à
-              l'emploi en quelques minutes.
+              Un formulaire guidé et des modèles : votre CV se construit en
+              direct, prêt pour vos candidatures.
             </p>
             <ul className="space-y-2">
               {CV_BULLETS.map((b) => (

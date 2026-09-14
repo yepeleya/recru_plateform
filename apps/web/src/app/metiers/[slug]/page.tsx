@@ -82,7 +82,7 @@ export default async function MetierPage({
           </div>
 
           <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-            {`${metier.blurb} Sur Bara, trouve un profil ${metier.label.toLowerCase()} près de chez toi, ou fais-toi connaître si c'est ton métier.`}
+            {`${metier.blurb} Sur Bara, trouve des offres ${metier.label.toLowerCase()} près de chez toi, ou publie la tienne si tu recrutes.`}
           </p>
         </div>
       </section>
@@ -95,14 +95,13 @@ export default async function MetierPage({
               {`Tu es ${metier.label.toLowerCase()} ?`}
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-primary-foreground/90">
-              Crée ton CV et publie ton profil pour être visible auprès des
-              recruteurs qui cherchent ce métier.
+              Crée ton CV pour postuler aux offres qui cherchent ce métier.
             </p>
             <Link
               href="/creer-un-cv"
               className="mt-5 inline-flex items-center gap-2 rounded-md bg-surface px-5 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-surface-2"
             >
-              Créer mon profil <ArrowRight aria-hidden className="h-4 w-4" />
+              Créer mon CV <ArrowRight aria-hidden className="h-4 w-4" />
             </Link>
           </article>
 
@@ -111,8 +110,7 @@ export default async function MetierPage({
               {`Tu recherches un·e ${metier.label.toLowerCase()} ?`}
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-accent-foreground/90">
-              Inscris-toi pour publier une offre ou parcourir les profils
-              disponibles sur Bara.
+              Inscris-toi pour publier une offre sur Bara.
             </p>
             <Link
               href="/inscription"

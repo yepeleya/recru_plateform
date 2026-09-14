@@ -5,7 +5,7 @@ import { Heart, ArrowRight } from "lucide-react";
 export const metadata: Metadata = {
   title: "À propos de Bara, plateforme de mise en relation",
   description:
-    "Bara connecte ceux qui cherchent un petit job et ceux qui recrutent en Côte d'Ivoire. Découvrez notre mission : rendre le travail accessible à tous, vite.",
+    "Bara connecte ceux qui cherchent un petit job et ceux qui recrutent en Côte d'Ivoire. Découvrez notre mission : rendre le travail accessible à tous.",
   alternates: { canonical: "/a-propos" },
   openGraph: {
     title: "À propos de Bara, plateforme de mise en relation",
@@ -33,10 +33,9 @@ export default function AProposPage() {
         </p>
         <p>
           Bara est né pour ça : une plateforme où{" "}
-          <strong>ceux qui cherchent un job créent leur CV et publient leur
-          profil</strong>, et où <strong>ceux qui recrutent trouvent en
-          quelques minutes une personne fiable et disponible</strong> —
-          entreprise comme particulier.
+          <strong>ceux qui cherchent un job créent leur CV et postulent aux
+          offres</strong>, et où <strong>ceux qui recrutent publient leurs
+          offres</strong> — entreprise comme particulier.
         </p>
         <p>
           Nous croyons aux petits jobs comme tremplin : un job de vacances
@@ -49,17 +48,16 @@ export default function AProposPage() {
         <h2 className="font-display text-2xl font-bold">Nos engagements</h2>
         <ul className="mt-5 space-y-4">
           <li className="card-lift rounded-2xl border border-stone-200 bg-white p-5">
-            <h3 className="font-semibold">La confiance d&apos;abord</h3>
+            <h3 className="font-semibold">Une pièce d&apos;identité à l&apos;inscription</h3>
             <p className="mt-1 text-sm leading-relaxed text-stone-600">
-              Chaque compte est adossé à une pièce d&apos;identité vérifiée par
-              notre équipe. Les badges « Profil vérifié » et « Entreprise
-              vérifiée » vous disent à qui vous avez affaire.
+              Chaque compte fournit une pièce d&apos;identité lors de son
+              inscription.
             </p>
           </li>
           <li className="card-lift rounded-2xl border border-stone-200 bg-white p-5">
             <h3 className="font-semibold">Gratuit pour démarrer</h3>
             <p className="mt-1 text-sm leading-relaxed text-stone-600">
-              Créer son CV et son profil est gratuit, et le restera. Voir{" "}
+              Créer son compte et son CV est gratuit, et le restera. Voir{" "}
               <Link href="/tarifs" className="font-medium text-brand hover:underline">
                 nos tarifs
               </Link>

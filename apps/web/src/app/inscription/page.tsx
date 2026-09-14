@@ -3,7 +3,7 @@ import { SignupWizard } from "@/components/auth/signup-wizard";
 
 export const metadata: Metadata = {
   title: "Créer un compte",
-  description: "Crée ton compte Bara, candidat ou recruteur, en quelques minutes.",
+  description: "Crée ton compte Bara, candidat ou recruteur.",
   robots: { index: false, follow: false },
 };
 

@@ -1,22 +1,18 @@
-// Façade « profils candidats ». FRONT-1 : lit lib/mock. FRONT-2 : appels API
-// (GET /profiles…) sans changer les signatures.
+// Façade « profils professionnels ». Aucune API de profils n'existe encore
+// (phase 4) : la façade renvoie une liste vide plutôt que des profils fictifs
+// (V22 — le produit ne prétend jamais). Les signatures sont celles que l'API
+// alimentera, pour ne pas réécrire les pages.
 import type { WorkerProfile } from "@bara/shared-types";
-import { mockProfiles } from "@/lib/mock";
 
 export interface ProfileFilters {
   metier?: string;
   availableNow?: boolean;
 }
 
-export async function getWorkerProfiles(filters: ProfileFilters = {}): Promise<WorkerProfile[]> {
-  return mockProfiles.filter(
-    (profile) =>
-      profile.isVisible &&
-      (!filters.metier || profile.metierSlug === filters.metier) &&
-      (!filters.availableNow || profile.isAvailableNow),
-  );
+export async function getWorkerProfiles(_filters: ProfileFilters = {}): Promise<WorkerProfile[]> {
+  return [];
 }
 
-export async function getWorkerProfileBySlug(slug: string): Promise<WorkerProfile | null> {
-  return mockProfiles.find((profile) => profile.slug === slug) ?? null;
+export async function getWorkerProfileBySlug(_slug: string): Promise<WorkerProfile | null> {
+  return null;
 }

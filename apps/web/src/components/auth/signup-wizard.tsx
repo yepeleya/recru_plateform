@@ -49,7 +49,7 @@ const ACCOUNT_TYPES: Array<{
   {
     value: "candidat",
     title: "Je cherche un job",
-    text: "Crée ton CV et publie ton profil pour être visible auprès des recruteurs.",
+    text: "Crée ton CV et postule aux offres des recruteurs.",
     icon: User,
   },
   {
@@ -308,10 +308,7 @@ export function SignupWizard() {
               Compte créé avec succès
             </h2>
             <p className="mx-auto mt-3 max-w-md leading-relaxed text-muted-foreground">
-              Ton compte Bara est actif dès maintenant. Ta pièce d&apos;identité sera
-              vérifiée par notre équipe, et tu recevras le badge{" "}
-              <strong className="text-foreground">« Profil vérifié »</strong> une fois le
-              contrôle terminé.
+              Ton compte Bara est actif dès maintenant.
             </p>
             <Link
               href="/"

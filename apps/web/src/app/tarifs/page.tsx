@@ -5,22 +5,22 @@ import { Check, Circle } from "lucide-react";
 export const metadata: Metadata = {
   title: "Tarifs Bara : plateforme gratuite au lancement",
   description:
-    "Combien coûte Bara ? Rien au lancement : inscription, CV, profil et offres 100 % gratuits pour les candidats comme pour les recruteurs. Détail des tarifs ici.",
+    "Combien coûte Bara ? Rien au lancement : inscription, candidatures et offres gratuites pour les candidats comme pour les recruteurs. Détail des tarifs ici.",
   alternates: { canonical: "/tarifs" },
   openGraph: {
     title: "Tarifs Bara : plateforme gratuite au lancement",
     description:
-      "Inscription, CV, profil et offres 100 % gratuits pour les candidats comme pour les recruteurs au lancement.",
+      "Inscription, candidatures et offres gratuites pour les candidats comme pour les recruteurs au lancement.",
     url: "/tarifs",
   },
 };
 
+// Uniquement des fonctionnalités réellement disponibles aujourd'hui (V22).
 const FREE_FEATURES = [
   "Création de compte candidat ou recruteur",
-  "Générateur de CV avec 4 modèles au choix",
-  "Publication de ton profil dans la base de candidats",
   "Publication d'offres de jobs",
-  "Consultation des profils et des offres",
+  "Consultation des offres",
+  "Candidature aux offres",
 ] as const;
 
 const FUTURE_FEATURES = [

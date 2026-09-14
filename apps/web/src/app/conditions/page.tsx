@@ -47,8 +47,8 @@ export default function ConditionsPage() {
         <section>
           <h2 className="text-xl font-bold">4. Responsabilité</h2>
           <p className="mt-2">
-            Bara met tout en œuvre pour vérifier les identités mais ne peut
-            garantir l&apos;issue des mises en relation. Les transactions et
+            Bara demande une pièce d&apos;identité à l&apos;inscription mais ne
+            peut garantir l&apos;issue des mises en relation. Les transactions et
             accords conclus entre utilisateurs relèvent de leur seule
             responsabilité.
           </p>

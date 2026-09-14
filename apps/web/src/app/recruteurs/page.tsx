@@ -1,40 +1,36 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Zap, ShieldCheck, FileText, Building2, ArrowRight } from "lucide-react";
+import { ShieldCheck, FileText, Building2, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Recruter du personnel ponctuel en Côte d'Ivoire",
   description:
-    "Entreprise ou particulier : publiez une offre ou parcourez des profils vérifiés et disponibles à Abidjan. Bara vous trouve la bonne personne, rapidement.",
+    "Entreprise ou particulier : publiez une offre de mission ou d'emploi en Côte d'Ivoire et recevez des candidatures sur Bara.",
   alternates: { canonical: "/recruteurs" },
   openGraph: {
     title: "Recruter du personnel ponctuel en Côte d'Ivoire",
     description:
-      "Publiez une offre ou parcourez des profils vérifiés et disponibles : Bara vous trouve la bonne personne, rapidement.",
+      "Publiez une offre de mission ou d'emploi et recevez des candidatures sur Bara.",
     url: "/recruteurs",
   },
 };
 
+// Chaque avantage décrit une capacité réellement disponible aujourd'hui (V22).
 const BENEFITS = [
   {
-    icon: Zap,
-    title: "Trouvez vite, même en urgence",
-    text: "Pénurie de main-d'œuvre ? Le filtre « Disponible maintenant » montre uniquement les candidats prêts à commencer tout de suite.",
+    icon: FileText,
+    title: "Des candidatures avec CV",
+    text: "Pour postuler, un candidat doit avoir un CV sur Bara : chaque candidature est accompagnée du sien.",
   },
   {
     icon: ShieldCheck,
-    title: "Des profils vérifiés",
-    text: "Chaque candidat fournit une pièce d'identité à l'inscription. Le badge « Profil vérifié » distingue les profils validés par notre équipe.",
-  },
-  {
-    icon: FileText,
-    title: "De vrais CV, pas des fiches",
-    text: "Les candidats créent leur CV directement sur Bara : vous consultez un dossier complet avant de contacter.",
+    title: "Une pièce d'identité à l'inscription",
+    text: "Chaque compte, candidat comme recruteur, fournit une pièce d'identité lors de son inscription.",
   },
   {
     icon: Building2,
-    title: "Pensé pour les entreprises",
-    text: "Startups, boutiques, supermarchés, agences : compte entreprise dédié, badge « Entreprise vérifiée » avec le RCCM, et offres partenaires à venir.",
+    title: "Entreprises et particuliers",
+    text: "Startups, boutiques, supermarchés, agences ou particuliers : un compte adapté à chacun, avec votre numéro RCCM si vous êtes une entreprise.",
   },
 ] as const;
 
@@ -48,12 +44,12 @@ export default function RecruteursPage() {
         />
         <div className="relative mx-auto max-w-6xl px-4 py-20">
           <h1 className="animate-fade-up font-display max-w-2xl text-4xl font-bold leading-tight text-white sm:text-5xl">
-            Recrutez la bonne personne, sans perdre de temps
+            Publiez votre offre, recevez des candidatures
           </h1>
           <p className="animate-fade-up anim-delay-1 mt-6 max-w-xl text-lg leading-relaxed text-stone-300">
-            Entreprise ou particulier, Bara vous connecte à une base de
-            candidats prêts à travailler : missions ponctuelles, renforts
-            saisonniers, temps partiel ou temps plein.
+            Entreprise ou particulier, publiez sur Bara vos missions
+            ponctuelles, renforts saisonniers, postes à temps partiel ou à
+            temps plein, et recevez les candidatures des personnes intéressées.
           </p>
           <div className="animate-fade-up anim-delay-2 mt-8 flex flex-wrap gap-4">
             <Link
@@ -61,12 +57,6 @@ export default function RecruteursPage() {
               className="btn-pop inline-flex items-center gap-2 rounded-full bg-brand px-7 py-3.5 font-semibold text-white"
             >
               Créer mon compte recruteur <ArrowRight aria-hidden className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/profils"
-              className="btn-pop inline-flex items-center rounded-full border border-white/20 bg-white/5 px-7 py-3.5 font-semibold text-white backdrop-blur-sm hover:bg-white/10"
-            >
-              Voir les profils
             </Link>
           </div>
         </div>
