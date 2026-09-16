@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Mail, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { SITE_NAME } from "@/lib/site";
 
 // Pied de page public — style de la maquette Stitch (accueil) : fond clair
@@ -63,15 +63,12 @@ export function PublicFooter() {
           </ul>
         </nav>
 
-        {/* Contact */}
+        {/* Où nous sommes — aucune adresse de contact publiée tant qu'il n'y en a pas. */}
         <div>
-          <h2 className="mb-4 text-sm font-bold text-foreground">Contact</h2>
+          <h2 className="mb-4 text-sm font-bold text-foreground">Où nous sommes</h2>
           <ul className="space-y-2.5 text-sm text-muted-foreground">
-            <li className="flex items-center gap-2">
-              <Mail className="h-4 w-4 shrink-0" aria-hidden /> contact@bara.ci
-            </li>
             <li className="flex items-start gap-2">
-              <MapPin className="h-4 w-4 shrink-0" aria-hidden /> Abidjan, Plateau
+              <MapPin className="h-4 w-4 shrink-0" aria-hidden /> Abidjan, Abobo Dokui
             </li>
           </ul>
         </div>
