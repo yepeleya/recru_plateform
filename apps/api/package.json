@@ -13,16 +13,9 @@
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
     "test": "jest",
+    "test:unit": "jest --testPathPatterns \"src/.*\\.spec\\.ts$\"",
+    "test:e2e": "jest --testPathPatterns \"test/.*\\.e2e-spec\\.ts$\"",
     "typecheck": "tsc --noEmit -p tsconfig.json"
-  },
-  "jest": {
-    "moduleFileExtensions": ["js", "json", "ts"],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "testEnvironment": "node"
   },
   "dependencies": {
     "@bara/shared-types": "workspace:*",
