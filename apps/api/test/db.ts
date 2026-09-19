@@ -15,24 +15,72 @@ export function testPrisma(): PrismaClient {
   return client;
 }
 
-/** Vide toutes les tables métier. Refuse de s'exécuter hors d'une base « _test ». */
-export async function resetDatabase(): Promise<void> {
-  const prisma = testPrisma();
-  const [{ db }] = await prisma.$queryRawUnsafe<{ db: string }[]>('SELECT DATABASE() AS db');
-  if (!db?.endsWith('_test')) {
-    throw new Error(`Remise à zéro refusée : la connexion pointe sur « ${db} », pas sur une base de test.`);
+const TABLE_NAME = /^[A-Za-z0-9_]+$/;
+
+/** URL de la base de test, contrainte à une seule connexion. */
+function singleConnectionUrl(): string {
+  const raw = process.env.DATABASE_URL;
+  assertTestDatabase(raw);
+  const url = new URL(raw!);
+  url.searchParams.set('connection_limit', '1');
+  return url.toString();
+}
+
+/**
+ * Vide les tables données sur UNE connexion dédiée, ouverte pour l'occasion et
+ * toujours fermée ensuite.
+ *
+ * Garanties :
+ *  - un client Prisma limité à une connexion (`connection_limit=1`) exécute la
+ *    vérification de la base, SET FOREIGN_KEY_CHECKS = 0 et tous les TRUNCATE :
+ *    le réglage, propre à une session MySQL, s'applique donc bien aux TRUNCATE ;
+ *  - FOREIGN_KEY_CHECKS = 1 est restauré dans un `finally` ;
+ *  - la connexion est fermée dans un `finally`, même en cas d'erreur : aucune
+ *    session aux contrôles désactivés ne retourne dans un pool.
+ *
+ * Ce que ce n'est PAS : une opération atomique. Sous MySQL, chaque TRUNCATE
+ * provoque un commit implicite. Si une table échoue, celles déjà vidées le
+ * restent ; l'erreur est remontée et le test échoue.
+ */
+export async function truncateTables(tables: string[]): Promise<void> {
+  for (const table of tables) {
+    if (!TABLE_NAME.test(table)) {
+      throw new Error(`Nom de table refusé : « ${table} ».`);
+    }
   }
 
-  const tables = await prisma.$queryRawUnsafe<{ TABLE_NAME: string }[]>(
+  const cleaner = new PrismaClient({ datasources: { db: { url: singleConnectionUrl() } } });
+  try {
+    // Vérification sur la connexion même qui va supprimer.
+    const [{ db }] = await cleaner.$queryRawUnsafe<{ db: string }[]>('SELECT DATABASE() AS db');
+    if (!db?.endsWith('_test')) {
+      throw new Error(`Remise à zéro refusée : la connexion pointe sur « ${db} », pas sur une base de test.`);
+    }
+
+    await cleaner.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS = 0');
+    try {
+      for (const table of tables) {
+        await cleaner.$executeRawUnsafe(`TRUNCATE TABLE \`${table}\``);
+      }
+    } finally {
+      await cleaner.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS = 1');
+    }
+  } finally {
+    await cleaner.$disconnect();
+  }
+}
+
+/** Tables métier de la base de test (hors historique des migrations). */
+async function businessTables(): Promise<string[]> {
+  const rows = await testPrisma().$queryRawUnsafe<{ TABLE_NAME: string }[]>(
     "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME <> '_prisma_migrations'",
   );
+  return rows.map((row) => row.TABLE_NAME);
+}
 
-  await prisma.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS = 0');
-  for (const { TABLE_NAME } of tables) {
-    await prisma.$executeRawUnsafe(`TRUNCATE TABLE \`${TABLE_NAME}\``);
-  }
-  await prisma.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS = 1');
-
+/** Vide toutes les tables métier et le dossier d'upload de test. */
+export async function resetDatabase(): Promise<void> {
+  await truncateTables(await businessTables());
   resetUploads();
 }
 

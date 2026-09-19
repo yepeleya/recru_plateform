@@ -31,7 +31,11 @@ export function databaseNameOf(url: string): string {
   return new URL(url).pathname.replace(/^\//, '');
 }
 
-/** Refuse toute base qui n'est pas une base de test. */
+// Seul un MySQL local est accepté par défaut. Un autre hôte doit être autorisé
+// explicitement, et nommément, par TEST_DATABASE_ALLOWED_HOST (voir TESTING.md).
+const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
+
+/** Refuse toute base qui n'est pas une base de test locale. */
 export function assertTestDatabase(url: string | undefined): void {
   if (!url) {
     throw new Error('DATABASE_URL absente : les tests refusent de démarrer.');
@@ -41,6 +45,14 @@ export function assertTestDatabase(url: string | undefined): void {
     throw new Error(
       `Base « ${name} » refusée : les tests n'acceptent qu'une base dont le nom se termine par « _test ». ` +
         'Définissez TEST_DATABASE_URL vers une base de test dédiée.',
+    );
+  }
+  const host = new URL(url).hostname;
+  const allowedHost = process.env.TEST_DATABASE_ALLOWED_HOST;
+  if (!LOCAL_HOSTS.has(host) && host !== allowedHost) {
+    throw new Error(
+      `Hôte « ${host} » refusé : les tests n'utilisent qu'un MySQL local (localhost ou 127.0.0.1). ` +
+        'Pour un autre hôte, autorisez-le explicitement avec TEST_DATABASE_ALLOWED_HOST (voir TESTING.md).',
     );
   }
 }
