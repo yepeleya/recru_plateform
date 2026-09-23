@@ -151,38 +151,102 @@ model Cv {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  applications Application[]
+  applications   Application[]
+  // Profil professionnel rattaché à ce CV. La suppression du CV met `cvId` à
+  // NULL côté profil : le profil survit, sans CV consultable (dette S1 corrigée).
+  workerProfiles WorkerProfile[]
 
   @@map("cvs")
 }
 
+// Profil professionnel public. UN SEUL par compte (userId unique) : c'est le
+// profil qui rend un compte découvrable et autorisé à agir comme professionnel,
+// quel que soit son accountType.
+//
+// Trois axes distincts, jamais confondus (DOMAIN_MODEL §3.1) :
+//  - complétion   : `status` (draft → incomplete → complete), calculé SERVEUR ;
+//  - vérification : User.verificationStatus — donne un badge, jamais un droit ;
+//  - modération   : `status = suspended`, décision d'administration.
 model WorkerProfile {
-  id     String @id @default(uuid()) @db.Char(36)
+  id String @id @default(uuid()) @db.Char(36)
+  // Identifiant public stable, sans donnée personnelle : « profil-3f9a7c2d ».
+  // Figé à la création — il ne change jamais, même si le métier ou la ville changent.
   slug   String @unique @db.VarChar(150)
-  userId String @db.Char(36)
+  userId String @unique @db.Char(36)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   headline String  @db.VarChar(150)
   bio      String? @db.Text
 
   metierSlug String @db.VarChar(80)
-  city       String @db.VarChar(80)
+  // Jusqu'à 3 slugs de métiers secondaires — contrôle applicatif, pas de table.
+  secondaryMetiers Json?
+  city             String @db.VarChar(80)
+  // Communes d'intervention.
+  areas            Json?
 
-  isAvailableNow Boolean   @default(true)
-  availableFrom  DateTime?
+  // 'immediate' | 'sous_7j' | 'sur_rdv' | 'indisponible' — obligatoire pour `complete`.
+  availability  String?   @db.VarChar(20)
+  availableFrom DateTime?
+  // ⚠️ Remplacé par `availability`. Conservé le temps que l'API et les types
+  // partagés basculent (sous-étape 4.3), puis supprimé par une migration dédiée.
+  isAvailableNow Boolean @default(true)
 
   // string[] de JobType — stocké en JSON (pas de type array natif MySQL/Prisma)
   jobTypes Json
 
-  cvId      String? @db.Char(36)
-  isVisible Boolean @default(true)
+  experienceYears Int?
+  rateMin         Int?
+  rateMax         Int?
+  // 'mission' | 'jour' | 'heure' | 'mois'
+  rateUnit        String? @db.VarChar(20)
+
+  // Photo facultative (V5). Clé de stockage privé : jamais d'URL publique, la
+  // photo n'est servie que par un endpoint contrôlé.
+  photoKey String? @db.VarChar(100)
+
+  cvId String? @db.Char(36)
+  cv   Cv?     @relation(fields: [cvId], references: [id], onDelete: SetNull)
+
+  // 'draft' | 'incomplete' | 'complete' | 'suspended' — jamais accepté du client.
+  status          String  @default("draft") @db.VarChar(30)
+  // 0 à 100, recalculé serveur à chaque écriture. Jamais accepté du client.
+  completionScore Int     @default(0)
+  // Le professionnel peut se masquer sans changer son statut.
+  isVisible       Boolean @default(true)
+
+  lastActiveAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([userId])
+  skills ProfileSkill[]
+
   @@index([metierSlug])
+  // Recherche publique : seuls les profils complets, visibles et non suspendus
+  // entrent dans les résultats ; le filtre métier ou ville suit.
+  @@index([status, isVisible, metierSlug])
+  @@index([status, isVisible, city])
   @@map("worker_profiles")
+}
+
+// Compétences déclarées par le professionnel — au moins 3 pour un profil complet.
+// Aucune donnée calculée : ni popularité, ni classement.
+model ProfileSkill {
+  id        String        @id @default(uuid()) @db.Char(36)
+  profileId String        @db.Char(36)
+  profile   WorkerProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  label    String @db.VarChar(60)
+  position Int    @default(0)
+
+  createdAt DateTime @default(now())
+
+  // La collation utf8mb4_unicode_ci rend l'unicité insensible à la casse :
+  // « Photoshop » et « photoshop » ne peuvent pas coexister sur un même profil.
+  @@unique([profileId, label])
+  @@index([profileId])
+  @@map("profile_skills")
 }
 
 model JobOffer {
